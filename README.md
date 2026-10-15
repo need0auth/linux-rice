@@ -1,3 +1,5 @@
+> **New photo-based retro variant:** cyan/navy frames, salmon and mint pixel buttons, and bitmap icons. See the [retro UI and install guide](docs/retro.md). It lives in `quickshell-retro/` on `feat/spidey-tracker-retro`; the original rice below remains available on `main` and its `quickshell/` files are unchanged.
+
 # SPIDEY TRACKER // Linux rice
 
 A Hyprland + Quickshell desktop inspired by the [Spidey Tracker](https://spideytracker.net/intl/br/) interface: charcoal panels, signal-red accents, square pixel buttons, a city-map wallpaper and a tracking dashboard.
