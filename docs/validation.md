@@ -13,11 +13,13 @@ Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings 
 
 ## Native Arch Linux
 
+**Native Arch CI passed** for implementation commit `54d14d4`: [Arch Linux run #1](https://github.com/need0auth/linux-rice/actions/runs/38794450322). The job installed signed official Arch packages, ran all 35 tests, installed the dotfiles into a temporary config root, verified the Hyprland config as an ordinary user, rendered a 1600×1000 Quickshell preview, exercised dashboard/settings IPC and read live telemetry. Package versions, logs and the screenshot are recorded in the run's `arch-validation` artifact.
+
 An official Arch container started from digest `sha256:3c64b538588416593f69a1aebd2f2ec0f2541b29159f32556fa7def2167147a0`, image version `20261011.0.609700`. The target checker identifies Arch and reports missing desktop packages in that minimal image.
 
 The cloud proxy returns HTTP 403 for Arch's package mirrors. Native Arch Qt/Hyprland installation and execution have **not been completed in this cloud instance**. Current-stable Quickshell tests on Debian are recorded separately above; they do not establish native Arch package compatibility. The required official domains were saved in the environment's network draft; saving does not apply it.
 
-The [Arch workflow](../.github/workflows/arch.yml) runs native package/runtime checks on pushes to `main`, pull requests and manual dispatch. Inspect its status and `arch-validation` artifact for actual package versions, config logs and the UI screenshot. Workflow presence alone does not establish a passing run.
+The [Arch workflow](../.github/workflows/arch.yml) repeats native package/runtime checks on pushes to `main`, pull requests and manual dispatch. Inspect its current status and `arch-validation` artifact for package versions, config logs and the UI screenshot.
 
 Stable `quickshell` is an official Arch package, as documented in [Quickshell's installation guide](https://quickshell.org/docs/guide/install-setup/). AUR `quickshell-git` is for unreleased builds. Use a full `pacman -Syu` to keep Qt private-ABI dependencies aligned. Pacman resolves the Qt dependencies; no separate mandatory `qt6-wayland` package is assumed for Qt 6.10+.
 
