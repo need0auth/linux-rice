@@ -1,17 +1,17 @@
 import QtQuick
 import "../services"
 
-Rectangle {
+PixelFrame {
     visible: TrackerState.message !== "" || !Telemetry.healthy
-    color: Theme.panel; border.color: Theme.red; border.width: 1
-    implicitWidth: Math.min(600, note.implicitWidth + 36)
-    implicitHeight: note.height + 24
+    fill: Theme.peach; pixel: 2; inset: 10
+    implicitWidth: Math.min(620, note.implicitWidth + 38)
+    implicitHeight: note.height + 25
     Text {
         id: note
         anchors.centerIn: parent
-        width: Math.min(560, implicitWidth)
+        width: Math.min(580, implicitWidth)
         text: TrackerState.message || Telemetry.error
         wrapMode: Text.WordWrap
-        color: Theme.text; font.family: Theme.mono; font.pixelSize: 11
+        font.family: Theme.pixel; font.pixelSize: 10; color: Theme.ink
     }
 }

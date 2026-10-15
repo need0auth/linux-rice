@@ -134,9 +134,9 @@ class ActionTests(unittest.TestCase):
             self.assertEqual(popen.call_args.args[0], ["/usr/bin/foot"])
             self.assertTrue(popen.call_args.kwargs["start_new_session"])
 
-    def test_terminal_and_lock_use_installed_configs_under_xdg_config_home(self):
+    def test_lock_uses_installed_config_under_xdg_config_home(self):
         with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": folder}):
-            for name, program, relative in [("terminal", "kitty", "kitty-spidey/kitty.conf"), ("lock", "hyprlock", "hypr-spidey/hyprlock.conf")]:
+            for name, program, relative in [("lock", "hyprlock", "hypr-spidey/hyprlock.conf")]:
                 with self.subTest(action=name):
                     config = Path(folder) / relative
                     config.parent.mkdir()
@@ -145,17 +145,25 @@ class ActionTests(unittest.TestCase):
                         system.action(name)
                         self.assertEqual(popen.call_args.args[0], [f"/usr/bin/{program}", "--config", str(config)])
 
-    def test_missing_themed_config_preserves_program_default(self):
+    def test_missing_lock_config_preserves_program_default(self):
         with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": folder}):
-            self.assertEqual(system.themed_command("kitty", "kitty-spidey/kitty.conf"), ["kitty"])
             self.assertEqual(system.themed_command("hyprlock", "hypr-spidey/hyprlock.conf"), ["hyprlock"])
 
     def test_empty_xdg_config_home_uses_home_dot_config(self):
         with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": ""}), patch.object(system.Path, "home", return_value=Path(folder)):
-            config = Path(folder) / ".config" / "kitty-spidey" / "kitty.conf"
+            config = Path(folder) / ".config" / "hypr-spidey" / "hyprlock.conf"
             config.parent.mkdir(parents=True)
             config.write_text("# fixture")
-            self.assertEqual(system.themed_command("kitty", "kitty-spidey/kitty.conf"), ["kitty", "--config", str(config)])
+            self.assertEqual(system.themed_command("hyprlock", "hypr-spidey/hyprlock.conf"), ["hyprlock", "--config", str(config)])
+
+    def test_terminal_ignores_retired_rice_theme(self):
+        with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": folder}):
+            old_config = Path(folder) / "kitty-spidey" / "kitty.conf"
+            old_config.parent.mkdir()
+            old_config.write_text("# retired theme")
+            with patch.object(system.shutil, "which", side_effect=lambda program: "/usr/bin/kitty" if program == "kitty" else None), patch.object(system.subprocess, "Popen") as popen:
+                system.action("terminal")
+                self.assertEqual(popen.call_args.args[0], ["/usr/bin/kitty"])
 
     def test_screenshot_rejects_untrusted_selection_before_running_grim(self):
         with patch.object(system.shutil, "which", return_value="/usr/bin/tool"), patch.object(system, "run_command", return_value="0,0 100x100; touch /tmp/nope") as run:

@@ -4,34 +4,30 @@ import "../services"
 
 Item {
     id: root
-    Rectangle { anchors.fill: parent; color: Theme.background }
-    Image { anchors.fill: parent; source: "../assets/wallpaper.png"; fillMode: Image.PreserveAspectCrop }
-    Rectangle { anchors.fill: parent; color: "#20000000" }
-    // A desktop-only concept presentation; live mode draws panels over your apps.
-    Column {
-        x: 62; y: parent.height * .23; spacing: 20
-        Text { text: "EST. QUEENS, NY  /  40.7282 N"; color: Theme.muted; font.family: Theme.mono; font.pixelSize: 10; font.letterSpacing: 2 }
-        Text { text: "YOUR FRIENDLY\nNEIGHBORHOOD\nDESKTOP."; color: Theme.text; font.family: Theme.pixel; font.pixelSize: Math.min(37, root.width / 41); lineHeight: 1.18 }
-        Row {
-            spacing: 10
-            Rectangle { width: 25; height: 2; color: Theme.red; anchors.verticalCenter: parent.verticalCenter }
-            Text { text: "A LITTLE MORE AMAZING."; color: Theme.red; font.family: Theme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
-        }
-        Text { text: "HYPRLAND + QUICKSHELL\nPIXEL BY PIXEL. BLOCK BY BLOCK."; color: Theme.muted; font.family: Theme.mono; font.pixelSize: 10; lineHeight: 1.8 }
-        Row {
-            spacing: 8
-            PixelButton { icon: "radar"; label: "TRACKER"; selected: TrackerState.dashboardOpen; onClicked: TrackerState.toggle() }
-            PixelButton { icon: "grid"; label: "APPS"; onClicked: Telemetry.act("launcher") }
+    Rectangle { anchors.fill: parent; color: "#172942" }
+    // A neutral work surface while the wallpaper is deliberately left undecided.
+    Canvas {
+        anchors.fill: parent
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        onPaint: {
+            const c = getContext("2d"); c.reset(); c.fillStyle = "#263b54";
+            for (let x = 12; x < width; x += 24)
+                for (let y = 12; y < height; y += 24) c.fillRect(x, y, 1, 1);
         }
     }
-    Column {
-        x: 62; anchors.bottom: parent.bottom; anchors.bottomMargin: 58; spacing: 10
-        Text { text: "[ 01 ]   LOCAL SYSTEM"; font.family: Theme.pixel; font.pixelSize: 10; color: Theme.text }
-        Text { text: "NO SUPERPOWERS REQUIRED."; font.family: Theme.mono; font.pixelSize: 9; color: Theme.dim; font.letterSpacing: 1 }
+    TopBar { anchors.top: parent.top; width: parent.width }
+    SideBar { x: 18; y: 168 }
+    QuickControls { visible: TrackerState.controlsOpen; x: 108; y: 168 }
+    TrackerConsole {
+        visible: TrackerState.dashboardOpen
+        anchors.right: parent.right; anchors.rightMargin: 20
+        y: 98; width: 470; height: Math.min(860, root.height - (root.height < 900 ? 118 : 200))
     }
-    TopBar { width: parent.width }
-    Dashboard { visible: TrackerState.dashboardOpen; anchors.right: parent.right; anchors.top: parent.top; anchors.rightMargin: 24; anchors.topMargin: 76; width: 408; height: Math.min(850, root.height - 104) }
-    Toast { anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: 20 }
+    BottomBar { x: 108; anchors.bottom: parent.bottom; anchors.bottomMargin: 20; width: Math.min(710, root.width - 650) }
+    Text { x: 112; y: 112; text: "SPT / PERSONAL TRACKING DEVICE"; color: "#65869f"; font.family: Theme.pixel; font.pixelSize: 10 }
+    Text { x: 112; anchors.bottom: parent.bottom; anchors.bottomMargin: 116; text: "UI PREVIEW  //  WALLPAPER NOT SET"; color: "#65869f"; font.family: Theme.pixel; font.pixelSize: 8 }
+    Toast { anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: 110 }
     Timer {
         interval: 2200; running: (Quickshell.env("SPIDEY_SCREENSHOT") || "") !== ""; repeat: false
         onTriggered: root.grabToImage(function(result) {

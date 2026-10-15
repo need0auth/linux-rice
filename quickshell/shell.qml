@@ -1,9 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import "services"
-import "components"
 
 ShellRoot {
     IpcHandler {
@@ -11,6 +9,7 @@ ShellRoot {
         function toggle(): void { TrackerState.toggle(); }
         function open(): void { TrackerState.dashboardOpen = true; }
         function close(): void { TrackerState.dashboardOpen = false; }
+        function controls(): void { TrackerState.controlsOpen = !TrackerState.controlsOpen; }
     }
     LazyLoader {
         active: true

@@ -13,7 +13,7 @@ image smoothing disabled in QML so the stepped silhouettes stay crisp.
 Rebuild from the repository root:
 
 ```sh
-python3 tools/generate-retro-icons.py
+python3 tools/generate-icons.py
 ```
 
 The generator needs only Python's standard library. It writes only this

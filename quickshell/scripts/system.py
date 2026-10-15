@@ -312,11 +312,11 @@ def action(name: str, value: str | None = None) -> dict:
         "media-previous": ["playerctl", "previous"],
     }
     launches = {
-        "terminal": [themed_command("kitty", "kitty-spidey/kitty.conf"), ["foot"], ["alacritty"], ["wezterm"], ["ghostty"]],
+        "terminal": [["kitty"], ["foot"], ["alacritty"], ["wezterm"], ["ghostty"]],
         "browser": [["firefox"], ["chromium"], ["google-chrome-stable"], ["brave"], ["xdg-open", "https://spideytracker.net/intl/br/"]],
         "files": [["xdg-open", str(Path.home())], ["thunar"], ["dolphin"], ["nautilus"]],
         "network": [["nm-connection-editor"], ["iwgtk"], ["gnome-control-center", "network"]],
-        "launcher": [["fuzzel"], ["wofi", "--show", "drun"], ["rofi", "-show", "drun"]],
+        "launcher": [["fuzzel", "--background=122743ff", "--text=e4f8ffff", "--selection=49c7f4ff", "--selection-text=122743ff", "--border-color=49c7f4ff", "--border-width=2", "--border-radius=0", "--font=monospace:size=11"], ["wofi", "--show", "drun"], ["rofi", "-show", "drun"]],
         "lock": [themed_command("hyprlock", "hypr-spidey/hyprlock.conf"), ["swaylock", "-f", "-c", "080b12"]],
     }
     if name in ("volume-set", "brightness-set"):

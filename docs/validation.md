@@ -1,49 +1,35 @@
-# Development validation
+# Validation
 
-The following checks completed in the development cloud environment:
+## Checks completed in the cloud
 
-| Check | Result |
-| --- | --- |
-| Python bridge and safe-installer integration suite | **28 tests passed**. Covers telemetry parsers, missing tools, timeouts, allowed actions, rejected values, screenshot selection validation, themed config paths, dry runs, repeated installation, conflicts, backups, and preservation of unrelated files. |
-| Bash syntax | `install.sh`, `uninstall.sh`, and `wallpaper.sh` passed `bash -n`. |
-| Hyprland Lua | Parsed with Lua 5.4. API/schema compared with the official Hyprland v0.56.2 sources. Startup/IPC argument quoting exercised with a mock runner using config paths containing spaces and apostrophes. |
-| Quickshell | Official **v0.2.1**, built against **Qt 6.8.2**. Real QML loaded and rendered; bundled SVG icons and font loaded. |
-| Preview mode | Offscreen software-rendered 1600×1000 window using demo telemetry and separately using real Linux telemetry. Screenshot output verified. The only remaining offscreen warning concerns unsupported window masks. |
-| Dashboard IPC | `open`, `close`, and `toggle` succeeded against the running shell; rendered open/closed output differed as expected. |
-| Production panels | `Desktop.qml` bar and dashboard rendered under **Sway 1.10.1** with a headless Wayland backend and pixman. No QML errors. Missing Hyprland socket warning was expected. |
-| Artwork | Wallpaper PNG and both screenshots decoded successfully. All **23 SVG icons** parsed as XML. |
-| Hyprpaper launcher | Generated the appropriate 0.7 and 0.8 formats against mocked versioned executables; paths containing spaces and temporary-file cleanup checked. |
+- **35 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation and lock-config selection.
+- Actual UI rendering, layer-shell panels under headless Sway and dashboard/settings IPC passed with **Quickshell 0.2.1** and current stable **0.3.2**, built from official sources against the cloud machine's **Qt 6.8.2**.
+- Demo data and real Linux telemetry were exercised. The decorative tracker collects no location data.
+- Layout checks include 1600×1000 and 1366×768; the smaller viewport scrolls to lower controls without reducing their size.
+- New spider SVGs were visually inspected; icons parse as XML and regenerate deterministically.
+- Bash syntax and Lua API/loading checks passed. Lua bindings match Hyprland 0.56.2 upstream APIs. Actual Hyprland config verification is included in Arch CI.
 
-`desktop.png` shows the real layer-shell layout with demo telemetry. `preview.png` shows the optional windowed presentation. Sample network/media/battery values in those images are labeled **DEMO** in the interface.
+Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings and an absent Hyprland socket under Sway are expected.
 
-The cloud machine does not provide a running Hyprland desktop or laptop hardware. Native Hyprland workspace dispatch, GPU-specific effects, audio routing, backlight permissions, MPRIS player interoperability, actual screenshots and PAM-backed screen locking remain checks for the target machine. Successful headless rendering does not verify those capabilities.
+## Native Arch Linux
+
+An official Arch container started from digest `sha256:3c64b538588416593f69a1aebd2f2ec0f2541b29159f32556fa7def2167147a0`, image version `20261011.0.609700`. The target checker identifies Arch and reports missing desktop packages in that minimal image.
+
+The cloud proxy returns HTTP 403 for Arch's package mirrors. Native Arch Qt/Hyprland installation and execution have **not been completed in this cloud instance**. Current-stable Quickshell tests on Debian are recorded separately above; they do not establish native Arch package compatibility. The required official domains were saved in the environment's network draft; saving does not apply it.
+
+The [Arch workflow](../.github/workflows/arch.yml) runs native package/runtime checks on pushes to `main`, pull requests and manual dispatch. Inspect its status and `arch-validation` artifact for actual package versions, config logs and the UI screenshot. Workflow presence alone does not establish a passing run.
+
+Stable `quickshell` is an official Arch package, as documented in [Quickshell's installation guide](https://quickshell.org/docs/guide/install-setup/). AUR `quickshell-git` is for unreleased builds. Use a full `pacman -Syu` to keep Qt private-ABI dependencies aligned. Pacman resolves the Qt dependencies; no separate mandatory `qt6-wayland` package is assumed for Qt 6.10+.
 
 ## Reproduce
 
-From the repository root:
+Install the README requirements on Arch, then run as a normal user:
 
 ```sh
-python3 -m unittest discover -s tests -v
-bash -n scripts/install.sh scripts/uninstall.sh config/hypr/wallpaper.sh
-SPIDEY_PREVIEW=1 SPIDEY_DEMO=1 qs -p "$PWD/quickshell"
+bash scripts/check-arch.sh
+bash scripts/ci-arch.sh
 ```
 
-To save a preview on a machine with Quickshell and its Qt dependencies:
+CI uses temporary config/runtime directories and never modifies your live Hyprland configuration. To keep logs/screenshots, set `SPIDEY_ARTIFACT_DIR` to a writable directory.
 
-```sh
-QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-  SPIDEY_PREVIEW=1 SPIDEY_DEMO=1 \
-  SPIDEY_SCREENSHOT="$PWD/docs/preview.png" qs -p "$PWD/quickshell"
-```
-
-The screenshot command exits after capture. To exercise a running instance's IPC, omit `SPIDEY_SCREENSHOT`, leave that instance running, and use another terminal:
-
-```sh
-qs -p "$PWD/quickshell" ipc call dashboard close
-qs -p "$PWD/quickshell" ipc call dashboard open
-qs -p "$PWD/quickshell" ipc call dashboard toggle
-```
-
-When installed as the named config, replace `-p "$PWD/quickshell"` with `-c spidey`. The shell defaults to real measurements; only `SPIDEY_DEMO=1` enables sample data and disables desktop actions.
-
-Hyprland API references: [official v0.56.2 example](https://github.com/hyprwm/Hyprland/blob/v0.56.2/example/hyprland.lua), [configuration bindings](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/config/lua/bindings/LuaBindingsConfigRules.cpp), and [dispatch bindings](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/config/lua/bindings/LuaBindingsDispatchers.cpp).
+Inside a real Hyprland session also run `bash scripts/check-arch.sh --all-tools --session` and exercise audio, backlight, media, locking and screenshots directly. A container cannot validate GPU/display behavior or your desktop permissions and services.

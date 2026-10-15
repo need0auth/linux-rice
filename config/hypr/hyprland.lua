@@ -1,6 +1,6 @@
 -- Starter configuration for Hyprland 0.55+ (Lua).
 -- Start explicitly with: Hyprland --config ~/.config/hypr-spidey/hyprland.lua
--- Existing users should load rice.lua from their own config instead; see README.
+-- Existing users should load rice.lua from their own config instead; see README.md.
 local config_root = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })

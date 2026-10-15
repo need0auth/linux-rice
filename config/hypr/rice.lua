@@ -11,14 +11,14 @@ return function(options)
         local command = "if command -v qs >/dev/null 2>&1; then exec qs \"$@\"; else exec quickshell \"$@\"; fi"
         return "env XDG_CONFIG_HOME=" .. quote(root) .. " sh -c " .. quote(command) .. " spidey -c spidey " .. (action or "")
     end
-    local terminal = "kitty --config " .. quote(root .. "/kitty-spidey/kitty.conf")
+    local terminal = "kitty"
 
     hl.config({
         general = {
             gaps_in = 5,
             gaps_out = 12,
-            border_size = 2,
-            col = { active_border = "rgba(ff454bff)", inactive_border = "rgba(303239ff)" },
+            border_size = 3,
+            col = { active_border = "rgba(49c7f4ff)", inactive_border = "rgba(122743ff)" },
             resize_on_border = true,
             allow_tearing = false,
             layout = "dwindle",
@@ -26,8 +26,8 @@ return function(options)
         decoration = {
             rounding = 0,
             active_opacity = 1.0,
-            inactive_opacity = 0.97,
-            shadow = { enabled = true, range = 12, render_power = 3, color = "rgba(00000066)" },
+            inactive_opacity = 1.0,
+            shadow = { enabled = false, range = 12, render_power = 3, color = "rgba(00000066)" },
             blur = { enabled = false },
         },
         animations = { enabled = true },
@@ -42,13 +42,12 @@ return function(options)
     if options.autostart ~= false then
         hl.on("hyprland.start", function()
             hl.exec_cmd(shell_command())
-            hl.exec_cmd("bash " .. quote(root .. "/hypr-spidey/wallpaper.sh") .. " " .. quote(root))
         end)
     end
 
     hl.bind("SUPER + RETURN", hl.dsp.exec_cmd(terminal))
     hl.bind("SUPER + D", hl.dsp.exec_cmd(shell_command("ipc call dashboard toggle")))
-    hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("fuzzel --background=090c10f5 --text=ece7dfff --selection=ff454bff --selection-text=090c10ff --border-color=ff454bff --border-width=2 --border-radius=0 --font='monospace:size=11'"))
+    hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("fuzzel --background=122743ff --text=e4f8ffff --selection=49c7f4ff --selection-text=122743ff --border-color=49c7f4ff --border-width=2 --border-radius=0 --font='monospace:size=11'"))
     hl.bind("SUPER + E", hl.dsp.exec_cmd("xdg-open \"$HOME\""))
     hl.bind("SUPER + Q", hl.dsp.window.close())
     hl.bind("SUPER + F", hl.dsp.window.fullscreen())

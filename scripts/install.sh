@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Install only this rice's symlinks. Never replace a user's existing configuration silently.
+# Install this rice's symlinks and retire known links from older layouts. Never replace a user's existing configuration silently.
 set -euo pipefail
 
 usage() {
     cat <<'USAGE'
 Usage: scripts/install.sh [--dry-run] [--backup] [--config-root PATH]
 
-Links Quickshell, Hyprland snippets and Kitty theme into the config directory.
+Links Quickshell and Hyprland snippets into the config directory.
 Existing files are refused unless --backup is explicitly supplied. Your main
-Hyprland and Kitty configurations are never edited. No packages are installed.
+Hyprland configuration is never edited. No packages are installed. Only known
+symlinks from older layouts are retired after the canonical links are installed.
 
   --dry-run           Show actions without creating directories or files.
   --backup            Move conflicts to unique .spidey-backup.* paths first.
@@ -42,8 +43,8 @@ if [[ "$config_root" == / || "$config_root" == *$'\n'* || "$config_root" == *$'\
     exit 2
 fi
 
-sources=("$repo_root/quickshell" "$repo_root/config/hypr" "$repo_root/config/kitty")
-destinations=("$config_root/quickshell/spidey" "$config_root/hypr-spidey" "$config_root/kitty-spidey")
+sources=("$repo_root/quickshell" "$repo_root/config/hypr")
+destinations=("$config_root/quickshell/spidey" "$config_root/hypr-spidey")
 conflicts=false
 for i in "${!sources[@]}"; do
     source_path=${sources[$i]}
@@ -91,7 +92,24 @@ for i in "${!sources[@]}"; do
     fi
 done
 
+# Older installers used these exact source/destination pairs. Retire only those
+# symlinks; never remove a real file, directory, or a foreign symlink.
+retired_sources=("$repo_root/quickshell-retro" "$repo_root/config/hypr-retro" "$repo_root/config/kitty")
+retired_destinations=("$config_root/quickshell/spidey-retro" "$config_root/hypr-spidey-retro" "$config_root/kitty-spidey")
+for i in "${!retired_sources[@]}"; do
+    destination=${retired_destinations[$i]}
+    if [[ -L "$destination" ]] && [[ $(readlink -- "$destination") == "${retired_sources[$i]}" ]]; then
+        printf 'Retire old link: %s\n' "$destination"
+        if ! "$dry_run"; then
+            rm -- "$destination"
+        fi
+    elif [[ -e "$destination" || -L "$destination" ]]; then
+        printf 'Leave unrelated retired path unchanged: %s\n' "$destination"
+    fi
+done
+
 printf '\nNo main configuration was changed.\n'
 printf 'Hyprland 0.55+: load %s/hypr-spidey/rice.lua from your existing Lua config.\n' "$config_root"
 printf 'Hyprland 0.48–0.54: source %s/hypr-spidey/rice.conf after defining $spideyConfigRoot.\n' "$config_root"
 printf 'See README.md for startup, dependencies and the complete starter configs.\n'
+printf 'Remove old spidey-retro source/autostart lines and start only qs -c spidey.\n'

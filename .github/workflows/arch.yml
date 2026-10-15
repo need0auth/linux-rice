@@ -1,0 +1,44 @@
+name: Arch Linux
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  arch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: archlinux:latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install signed Arch packages
+        run: >-
+          pacman -Syu --noconfirm --needed
+          git python hyprland quickshell qt6-declarative qt6-svg ttf-dejavu
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare an unprivileged test user
+        run: |
+          useradd --create-home spidey-ci
+          install -d -m 755 -o spidey-ci -g spidey-ci /tmp/spidey-arch-artifacts
+      - name: Test the native Arch stack
+        run: |
+          runuser -u spidey-ci -- env \
+            HOME=/home/spidey-ci \
+            SPIDEY_ARTIFACT_DIR=/tmp/spidey-arch-artifacts \
+            bash scripts/ci-arch.sh
+      - name: Save package versions, logs and UI preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-validation
+          path: /tmp/spidey-arch-artifacts/
+          if-no-files-found: warn
