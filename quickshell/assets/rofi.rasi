@@ -1,0 +1,64 @@
+// Spidey Tracker application launcher. Loaded only by this rice's APPS action.
+configuration {
+    modi: "drun";
+    show-icons: false;
+    display-drun: "APPS";
+    drun-display-format: "{name}";
+    matching: "fuzzy";
+    scroll-method: 0;
+}
+
+* {
+    ink: #122743;
+    navy: #192450;
+    cyan: #49c7f4;
+    peach: #ffd39a;
+    coral: #ff958d;
+    mint: #78ecb6;
+    paper: #fff0cc;
+    font: "DejaVu Sans Mono 11";
+    background-color: transparent;
+    text-color: @ink;
+    border-radius: 0px;
+    border-color: @ink;
+}
+
+window {
+    width: 640px;
+    location: center;
+    anchor: center;
+    background-color: @cyan;
+    border: 3px;
+    padding: 12px;
+}
+
+mainbox { spacing: 10px; children: [ inputbar, message, listview ]; }
+inputbar {
+    background-color: @peach;
+    border: 2px;
+    padding: 12px;
+    spacing: 12px;
+    children: [ prompt, entry ];
+}
+prompt { text-color: @ink; }
+entry { placeholder: "SEARCH APPLICATIONS..."; placeholder-color: #59759b; }
+message { background-color: @paper; border: 2px; padding: 8px; }
+textbox { text-color: @ink; }
+listview {
+    background-color: @navy;
+    border: 2px;
+    padding: 8px;
+    spacing: 6px;
+    lines: 8;
+    columns: 1;
+    fixed-height: true;
+    scrollbar: true;
+}
+element { padding: 10px 12px; border: 2px; spacing: 8px; }
+element normal.normal { background-color: @peach; text-color: @ink; }
+element alternate.normal { background-color: @paper; text-color: @ink; }
+element selected.normal { background-color: @mint; text-color: @ink; }
+element normal.urgent { background-color: @coral; text-color: @ink; }
+element selected.urgent { background-color: @coral; text-color: @ink; }
+element-text { text-color: inherit; vertical-align: 0.5; }
+scrollbar { handle-width: 6px; handle-color: @cyan; padding: 0px 0px 0px 6px; }

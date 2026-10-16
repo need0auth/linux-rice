@@ -2,7 +2,7 @@
 
 ## Checks completed in the cloud
 
-- **35 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation and lock-config selection.
+- **65 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection and provider-specific workspace dispatch.
 - Actual UI rendering, layer-shell panels under headless Sway and dashboard/settings IPC passed with **Quickshell 0.2.1** and current stable **0.3.2**, built from official sources against the cloud machine's **Qt 6.8.2**.
 - Demo data and real Linux telemetry were exercised. The decorative tracker collects no location data.
 - Layout checks include 1600×1000 and 1366×768; the smaller viewport scrolls to lower controls without reducing their size.
@@ -10,6 +10,21 @@
 - Bash syntax and Lua API/loading checks passed. Lua bindings match Hyprland 0.56.2 upstream APIs. Actual Hyprland config verification is included in Arch CI.
 
 Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings and an absent Hyprland socket under Sway are expected.
+
+## App actions and browser media
+
+App configuration tests verify Brave preference, direct file-manager launches that avoid folder MIME handlers, personal JSON overrides, literal argument handling, Rofi terminal selection and useful errors for missing network tools. Defaults are Kitty, Brave and Nemo. The provided Hyprland app shortcuts share the same configuration.
+
+An actual Rofi 1.7.5 window rendered the bundled theme under an isolated Xvfb server in the cloud. The public `system.py action launcher` path opened a temporary `Terminal=true` desktop entry in the configured terminal, including an executable path with a space and custom arguments. The launcher theme also passed Rofi's syntax validator. The portable `tests/integration/rofi.py` retains this check and runs in native Arch CI; it requires `rofi` and `xorg-server-xvfb` when run on Arch. The test isolates display sockets, desktop entries and all config directories.
+
+The portable MPRIS integration test starts its own D-Bus session and exports a playing Brave-style `chromium.instance4242` session beside a paused desktop player. Real `playerctl` commands verify selected browser metadata, transport routing even after the other player starts, title changes, pause state, and disappeared-player handling. This tests actual MPRIS IPC; it does not start a real browser or establish whether your Brave build exports a session.
+
+```sh
+sudo pacman -Syu --needed playerctl dbus python-gobject
+python3 tests/integration/mpris.py
+```
+
+Workspace tests cover Lua and legacy Hyprlang providers, empty numbered workspaces, dispatcher errors and rejected arguments. Actual Quickshell 0.2.1 and 0.3.2 component checks verified readable uptime boundaries and workspace names independent of opaque internal IDs. The retained `tests/integration/topbar.py` checks real component bindings, numbered/selected states, workspace click handlers and the network readout's click handler under an isolated demo runtime. Arch CI runs it. Live workspace changes still need a running Hyprland desktop.
 
 ## Window workarea regression
 
@@ -40,9 +55,10 @@ Stable `quickshell` is an official Arch package, as documented in [Quickshell's 
 
 ## Reproduce
 
-Install the README requirements plus `sway` and `grim` for the workarea regression, then run as a normal user:
+Install the README requirements plus the integration-test tools, then run as a normal user:
 
 ```sh
+sudo pacman -Syu --needed sway grim rofi xorg-server-xvfb playerctl dbus python-gobject
 bash scripts/check-arch.sh
 bash scripts/ci-arch.sh
 ```

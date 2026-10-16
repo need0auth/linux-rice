@@ -8,7 +8,18 @@ Item {
     id: root
     implicitHeight: Theme.barHeight
     property var monitor: null
-    readonly property int workspace: TrackerState.preview ? TrackerState.previewWorkspace : (monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : (Hyprland.focusedMonitor && Hyprland.focusedMonitor.activeWorkspace ? Hyprland.focusedMonitor.activeWorkspace.id : 1))
+    readonly property var activeWorkspace: monitor && monitor.activeWorkspace ? monitor.activeWorkspace : (Hyprland.focusedMonitor ? Hyprland.focusedMonitor.activeWorkspace : null)
+    // Workspace names remain stable across Hyprland versions; recent versions use
+    // the object's id for an internal address instead of its numbered name.
+    readonly property string workspace: TrackerState.preview ? String(TrackerState.previewWorkspace) : (activeWorkspace ? activeWorkspace.name : "1")
+    function formatUptime(seconds) {
+        const elapsed = Math.max(0, Math.floor(Number(seconds) || 0));
+        const days = Math.floor(elapsed / 86400);
+        const hours = String(Math.floor(elapsed / 3600) % 24).padStart(2, "0");
+        const minutes = String(Math.floor(elapsed / 60) % 60).padStart(2, "0");
+        const remainder = String(elapsed % 60).padStart(2, "0");
+        return days > 0 ? days + "d " + hours + ":" + minutes : hours + ":" + minutes + ":" + remainder;
+    }
     SystemClock { id: clock; precision: SystemClock.Minutes }
     PixelFrame {
         anchors.fill: parent
@@ -33,21 +44,21 @@ Item {
                     model: root.width < 1100 ? 3 : 5
                     RetroButton {
                         required property int index
-                        width: root.width < 1250 ? 50 : 82
-                        label: root.width < 1250 ? "0" + (index + 1) : "PROF " + (index + 1)
+                        width: 44
+                        label: String(index + 1)
                         tone: Theme.coral
-                        selected: root.workspace === index + 1
+                        selected: root.workspace === String(index + 1)
                         hint: "Workspace " + (index + 1)
                         onClicked: {
                             if (TrackerState.preview) TrackerState.previewWorkspace = index + 1;
-                            else Hyprland.dispatch("workspace " + (index + 1));
+                            else Telemetry.act("workspace", index + 1);
                         }
                     }
                 }
             }
             Item { Layout.fillWidth: true }
-            Readout { visible: root.width > 1420; label: "UPTIME"; value: "0x" + Math.floor(Telemetry.data.uptime).toString(16).toUpperCase().padStart(6, "0"); implicitWidth: 128; tone: Theme.mint }
-            Readout { visible: root.width > 1160; label: "NETWORK"; value: Telemetry.data.network.connected ? "LINKED" : "OFFLINE"; icon: Telemetry.data.network.connected ? "wifi" : "offline"; implicitWidth: 114 }
+            Readout { visible: root.width > 1240; label: "UPTIME"; value: root.formatUptime(Telemetry.data.uptime); implicitWidth: 128; tone: Theme.mint }
+            Readout { visible: root.width > 1160; label: "NETWORK"; value: Telemetry.data.network.connected ? "LINKED" : "OFFLINE"; icon: Telemetry.data.network.connected ? "wifi" : "offline"; implicitWidth: 114; interactive: true; hint: "Open network settings"; onClicked: Telemetry.act("network") }
             RetroButton { compact: true; width: 86; icon: Telemetry.data.volume.muted ? "muted" : "volume"; label: Telemetry.data.volume.available ? Math.round(Telemetry.data.volume.percent) + "%" : "--"; tone: Theme.peach; hint: "Mute audio / adjust in controls"; onClicked: Telemetry.act("volume-mute") }
             Readout { visible: Telemetry.data.battery.present && root.width > 1000; label: "POWER"; value: Math.round(Telemetry.data.battery.percent) + "%"; icon: Telemetry.data.battery.charging ? "plug" : "battery"; implicitWidth: 100; tone: Theme.mint }
             Readout { label: Qt.formatDateTime(clock.date, "ddd dd").toUpperCase(); value: Qt.formatDateTime(clock.date, "hh:mm"); implicitWidth: 88; tone: Theme.peach }

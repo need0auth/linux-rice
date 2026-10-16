@@ -79,8 +79,17 @@ class TelemetryTests(unittest.TestCase):
             self.assertEqual(system.brightness_status(), {"available": True, "percent": 40.0})
 
     def test_media_preserves_title_and_strips_controls(self):
-        with patch.object(system, "optional_output", return_value="Playing\x1fCITY\nSWING\x1fQUEENS\x1b RADIO"):
-            self.assertEqual(system.media_status(), {"available": True, "playing": True, "title": "CITY SWING", "artist": "QUEENS RADIO"})
+        output = {
+            ("playerctl", "--list-all"): "chromium.instance2354",
+            ("playerctl", "--player", "chromium.instance2354", "status"): "Playing",
+            ("playerctl", "--player", "chromium.instance2354", "metadata", "--format", "{{title}}"): "CITY\nSWING\x1f LIVE",
+            ("playerctl", "--player", "chromium.instance2354", "metadata", "--format", "{{artist}}"): "QUEENS\x1b RADIO",
+        }
+        with patch.object(system, "optional_output", side_effect=lambda argv: output.get(tuple(argv), "")):
+            self.assertEqual(system.media_status(), {
+                "available": True, "playing": True, "player": "chromium.instance2354",
+                "title": "CITY SWING LIVE", "artist": "QUEENS RADIO",
+            })
 
     def test_demo_is_deterministic_and_does_not_probe_machine(self):
         with patch.object(system, "run_command", side_effect=AssertionError("must not probe")):
@@ -89,6 +98,11 @@ class TelemetryTests(unittest.TestCase):
 
 
 class ActionTests(unittest.TestCase):
+    def test_media_action_controls_the_displayed_browser_instance(self):
+        with patch.object(system, "optional_output", return_value="spotify\nchromium.instance2354"), patch.object(system, "run_command") as run:
+            self.assertEqual(system.action("media-play-pause", "chromium.instance2354"), {"success": True})
+            self.assertEqual(run.call_args.args[0], ["playerctl", "--player", "chromium.instance2354", "play-pause"])
+
     def test_action_passes_arguments_without_a_shell(self):
         with patch.object(system.shutil, "which", return_value="/usr/bin/wpctl"), patch.object(system.subprocess, "run") as run:
             run.return_value = subprocess.CompletedProcess([], 0, "", "")

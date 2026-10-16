@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib.util
 import json
 import math
 import os
 from pathlib import Path
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -26,6 +28,21 @@ SYS_POWER = Path("/sys/class/power_supply")
 SYS_NETWORK = Path("/sys/class/net")
 SYS_BACKLIGHT = Path("/sys/class/backlight")
 COMMAND_TIMEOUT = 1.5
+SHELL_ROOT = Path(__file__).resolve().parents[1]
+APP_CONFIG = SHELL_ROOT / "config" / "apps.json"
+APP_ACTIONS = frozenset({"terminal", "browser", "files", "network", "launcher", "lock"})
+
+
+def load_helper(name: str):
+    """Load a sibling module when invoked directly or imported by fixture tests."""
+    spec = importlib.util.spec_from_file_location(f"spidey_{name}", Path(__file__).with_name(f"{name}.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+media = load_helper("media")
+workspace = load_helper("workspace")
 
 
 class ActionError(Exception):
@@ -203,14 +220,7 @@ def brightness_status(base: Path = SYS_BACKLIGHT) -> dict:
 
 
 def media_status() -> dict:
-    output = optional_output(["playerctl", "metadata", "--format", "{{status}}\x1f{{title}}\x1f{{artist}}"])
-    fields = output.split("\x1f", 2)
-    if len(fields) != 3:
-        return {"available": False, "playing": False, "title": "NO ACTIVE TRANSMISSION", "artist": ""}
-    return {
-        "available": True, "playing": fields[0].strip().lower() == "playing",
-        "title": clean_text(fields[1]) or "UNTITLED TRANSMISSION", "artist": clean_text(fields[2]),
-    }
+    return media.snapshot(optional_output, clean_text)
 
 
 def demo_snapshot() -> dict:
@@ -220,7 +230,7 @@ def demo_snapshot() -> dict:
         "network": {"connected": True, "interface": "wlan0", "name": "MILES-NET"},
         "volume": {"available": True, "percent": 64.0, "muted": False},
         "brightness": {"available": True, "percent": 72.0},
-        "media": {"available": True, "playing": True, "title": "CITY SWING // 104.8", "artist": "QUEENS RADIO"},
+        "media": {"available": True, "playing": True, "player": "", "title": "CITY SWING // 104.8", "artist": "QUEENS RADIO"},
     }
 
 
@@ -273,6 +283,66 @@ def themed_command(program: str, config_relative: str) -> list[str]:
     return [program, "--config", str(config)] if config.is_file() else [program]
 
 
+def read_app_config(path: Path, *, optional: bool = False) -> dict:
+    """Read explicit argv lists; invalid configuration must not launch a fallback."""
+    try:
+        contents = path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        if optional:
+            return {}
+        raise ActionError(f"Application configuration is missing: {path}") from exc
+    except OSError as exc:
+        raise ActionError(f"Could not read application configuration: {path}") from exc
+    except UnicodeError as exc:
+        raise ActionError(f"Application configuration must use UTF-8: {path}") from exc
+    try:
+        config = json.loads(contents)
+    except (ValueError, UnicodeError) as exc:
+        raise ActionError(f"Invalid JSON in application configuration: {path}") from exc
+    if not isinstance(config, dict):
+        raise ActionError(f"Application configuration must be a JSON object: {path}")
+    for name, candidates in config.items():
+        if name not in APP_ACTIONS:
+            raise ActionError(f"Unknown application action {clean_text(str(name))} in {path}")
+        if not isinstance(candidates, list) or not candidates:
+            raise ActionError(f"Application {name} needs a nonempty list of commands in {path}")
+        for argv in candidates:
+            if not isinstance(argv, list) or not argv or not isinstance(argv[0], str) or not argv[0] or any(
+                not isinstance(arg, str) or "\x00" in arg for arg in argv
+            ):
+                raise ActionError(f"Application {name} commands need argument arrays with a nonempty program in {path}")
+    return config
+
+
+def app_candidates(name: str) -> list[list[str]]:
+    """Merge per-user actions over repository defaults and expand path tokens."""
+    config_root = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    config = read_app_config(APP_CONFIG)
+    config.update(read_app_config(config_root / "spidey" / "apps.json", optional=True))
+    if name not in config:
+        raise ActionError(f"No application commands configured for {name} in {APP_CONFIG}")
+    tokens = {"{home}": str(Path.home()), "{config}": str(config_root), "{shell}": str(SHELL_ROOT)}
+    candidates = []
+    for command in config[name]:
+        argv = []
+        for arg in command:
+            for token, value in tokens.items():
+                arg = arg.replace(token, value)
+            argv.append(arg)
+        if name == "lock" and argv == ["hyprlock"]:
+            argv = themed_command("hyprlock", "hypr-spidey/hyprlock.conf")
+        if name == "launcher" and Path(argv[0]).name in ("rofi", "rofi-wayland") and not any(
+            arg == "-terminal" or arg.startswith("-terminal=") for arg in argv[1:]
+        ):
+            terminals = app_candidates("terminal")
+            terminal = next((candidate for candidate in terminals if shutil.which(candidate[0])), terminals[0])
+            # Rofi parses its terminal setting as an argv string. Quote each
+            # configured argument so profiles and paths with spaces stay intact.
+            argv.extend(["-terminal", shlex.join(terminal)])
+        candidates.append(argv)
+    return candidates
+
+
 def numeric_value(value: str | None) -> str:
     try:
         number = float(value) if value is not None else math.nan
@@ -307,17 +377,6 @@ def action(name: str, value: str | None = None) -> dict:
         "volume-mute": ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"],
         "brightness-up": ["brightnessctl", "-c", "backlight", "set", "+5%"],
         "brightness-down": ["brightnessctl", "-c", "backlight", "set", "5%-"],
-        "media-play-pause": ["playerctl", "play-pause"],
-        "media-next": ["playerctl", "next"],
-        "media-previous": ["playerctl", "previous"],
-    }
-    launches = {
-        "terminal": [["kitty"], ["foot"], ["alacritty"], ["wezterm"], ["ghostty"]],
-        "browser": [["firefox"], ["chromium"], ["google-chrome-stable"], ["brave"], ["xdg-open", "https://spideytracker.net/intl/br/"]],
-        "files": [["xdg-open", str(Path.home())], ["thunar"], ["dolphin"], ["nautilus"]],
-        "network": [["nm-connection-editor"], ["iwgtk"], ["gnome-control-center", "network"]],
-        "launcher": [["fuzzel", "--background=122743ff", "--text=e4f8ffff", "--selection=49c7f4ff", "--selection-text=122743ff", "--border-color=49c7f4ff", "--border-width=2", "--border-radius=0", "--font=monospace:size=11"], ["wofi", "--show", "drun"], ["rofi", "-show", "drun"]],
-        "lock": [themed_command("hyprlock", "hypr-spidey/hyprlock.conf"), ["swaylock", "-f", "-c", "080b12"]],
     }
     if name in ("volume-set", "brightness-set"):
         amount = numeric_value(value)
@@ -326,12 +385,16 @@ def action(name: str, value: str | None = None) -> dict:
             if name == "volume-set" else ["brightnessctl", "-c", "backlight", "set", f"{amount}%"]
         )
         run_command(argv)
+    elif name in media.MEDIA_COMMANDS:
+        run_command(media.command(name, value, optional_output, ActionError))
+    elif name == "workspace":
+        workspace.activate(value, run_command, ActionError)
     elif value is not None:
         raise ActionError(f"Action {clean_text(name)} does not accept a value.")
     elif name in commands:
         run_command(commands[name])
-    elif name in launches:
-        return launch(launches[name])
+    elif name in APP_ACTIONS:
+        return launch(app_candidates(name))
     elif name == "screenshot":
         return screenshot()
     else:

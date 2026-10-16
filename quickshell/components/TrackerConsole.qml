@@ -118,9 +118,9 @@ Item {
                         }
                         RowLayout {
                             Layout.fillWidth: true; spacing: 5
-                            RetroButton { Layout.fillWidth: true; compact: true; icon: "previous"; tone: Theme.peach; available: root.stats.media.available; hint: "Previous track"; onClicked: Telemetry.act("media-previous") }
-                            RetroButton { Layout.fillWidth: true; compact: true; icon: root.stats.media.playing ? "pause" : "play"; tone: Theme.mint; available: root.stats.media.available; hint: "Play or pause"; onClicked: Telemetry.act("media-play-pause") }
-                            RetroButton { Layout.fillWidth: true; compact: true; icon: "next"; tone: Theme.peach; available: root.stats.media.available; hint: "Next track"; onClicked: Telemetry.act("media-next") }
+                            RetroButton { Layout.fillWidth: true; compact: true; icon: "previous"; tone: Theme.peach; available: root.stats.media.available; hint: "Previous track"; onClicked: Telemetry.act("media-previous", root.stats.media.player) }
+                            RetroButton { Layout.fillWidth: true; compact: true; icon: root.stats.media.playing ? "pause" : "play"; tone: Theme.mint; available: root.stats.media.available; hint: "Play or pause"; onClicked: Telemetry.act("media-play-pause", root.stats.media.player) }
+                            RetroButton { Layout.fillWidth: true; compact: true; icon: "next"; tone: Theme.peach; available: root.stats.media.available; hint: "Next track"; onClicked: Telemetry.act("media-next", root.stats.media.player) }
                             Item { Layout.preferredWidth: 5 }
                             RetroButton { Layout.fillWidth: true; compact: true; icon: "minus"; tone: Theme.coral; available: root.stats.volume.available; hint: "Volume down"; onClicked: Telemetry.act("volume-down") }
                             RetroButton { Layout.fillWidth: true; compact: true; icon: root.stats.volume.muted ? "muted" : "volume"; tone: Theme.coral; available: root.stats.volume.available; hint: "Toggle mute"; onClicked: Telemetry.act("volume-mute") }

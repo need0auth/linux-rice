@@ -4,9 +4,9 @@
 
 A Hyprland + Quickshell desktop based on the supplied tracker reference: chunky cyan frames, navy panels, coral and mint buttons, peach keys, and illustrated pixel icons. This is the default rice on `main`. The previous black/red variant has been removed from the working tree.
 
-![Tracker desktop panels](docs/desktop.png)
+![Tracker desktop panels](docs/preview.png)
 
-The shell provides workspace profiles, an app rail, media dock, quick settings and a tracker dashboard. CPU, memory, storage, network, battery and media readings come from your machine. The map is decorative and collects no location data. Your wallpaper is left alone.
+The shell provides numbered workspace buttons, an app rail, media dock, quick settings and a tracker dashboard. CPU, memory, storage, network, battery and media readings come from your machine. The map is decorative and collects no location data. Your wallpaper is left alone.
 
 The top bar, left rail and bottom dock reserve compositor space, so tiled windows stay clear of them. The tracker and quick settings are popups. Transparent areas around the bars pass clicks through.
 
@@ -66,15 +66,15 @@ Use `quickshell` in place of `qs` if that is your executable name. Complete star
 Install the tools for the controls you want:
 
 ```sh
-sudo pacman -Syu --needed kitty fuzzel thunar xdg-utils firefox \
+sudo pacman -Syu --needed kitty rofi nemo \
   wireplumber playerctl brightnessctl grim slurp wl-clipboard hyprlock \
   networkmanager nm-connection-editor
 ```
 
 | Tool | Control |
 | --- | --- |
-| `kitty`, `firefox`, `xdg-open` and a file manager | Terminal, browser and files. Kitty keeps your normal configuration. |
-| `fuzzel` | App launcher with the cyan/navy palette. |
+| `kitty`, your existing Brave installation, `nemo` | Default terminal, browser and files. Kitty keeps your normal configuration. |
+| `rofi` | APPS launcher with the cyan/navy/pastel theme; Fuzzel and Wofi are fallbacks. |
 | `wpctl` from `wireplumber` | Volume and mute, with an existing working PipeWire session. |
 | `playerctl` | Playback and metadata from MPRIS players. |
 | `brightnessctl` | Backlight controls, subject to hardware and user permissions. |
@@ -85,6 +85,38 @@ sudo pacman -Syu --needed kitty fuzzel thunar xdg-utils firefox \
 The rice does not change your network or audio service setup. Missing tools or devices disable the corresponding readings/controls or produce an action message. CPU, RAM, storage and uptime need only Python and Linux's system interfaces.
 
 Run `bash scripts/check-arch.sh --all-tools --session` from your Arch Hyprland desktop to check installed controls and compositor monitor IPC. Audio routing, backlight access, MPRIS and locking still need a direct check on your machine.
+
+## Preferred applications
+
+Edit [quickshell/config/apps.json](quickshell/config/apps.json) to change what the buttons launch. Defaults prefer **Kitty, Brave and Nemo**. Each action contains an ordered list of argument arrays; the first installed executable wins. Files launches a real file manager directly, so your folder MIME association cannot send it to an editor. The top-bar NETWORK button opens your configured network settings app.
+
+For preferences that survive `git pull`, create `~/.config/spidey/apps.json` (or `$XDG_CONFIG_HOME/spidey/apps.json`). Include only the actions you want to replace:
+
+```json
+{
+  "terminal": [["kitty"]],
+  "browser": [["brave"]],
+  "files": [["nemo", "{home}"]]
+}
+```
+
+Available keys are `terminal`, `browser`, `files`, `network`, `launcher` and `lock`. Arguments support `{home}`, `{config}` and `{shell}` path tokens. Keep each argument separate; these commands do not run through a shell. Changes apply on the next click. The provided Hyprland terminal/files/launcher shortcuts use the same preferences after `hyprctl reload`.
+
+APPS opens the bundled [Rofi theme](quickshell/assets/rofi.rasi). Installed desktop entries such as Discord, Obsidian, Spotify and Brave appear in its searchable list. Rofi uses your configured terminal for terminal entries such as Vim. You can replace `launcher` with your own Rofi command or another launcher.
+
+## Brave, YouTube and Spotify media
+
+The dock reads MPRIS sessions through `playerctl`, including Brave sessions named `chromium.instance…`. Playing sessions take priority over paused players. The transport buttons address the exact session displayed in the dock. If several players are playing, selection is stable by player name.
+
+While a YouTube video is playing in Brave, check:
+
+```sh
+playerctl --list-all
+playerctl --all-players status
+playerctl --all-players metadata --format '{{playerName}}: {{title}}'
+```
+
+If Brave is absent, the browser is not exporting a media session to your desktop bus. Check its launch arguments and media controls settings for disabled MPRIS/media integration, then restart Brave. Browser flags vary by version; no browser extension is required when MPRIS is available. The bar cannot read video metadata from audio alone. Spotify desktop also works when it exports MPRIS.
 
 ## Updating either previous version
 
@@ -103,7 +135,9 @@ Replace old `hypr-spidey-retro/rice.*` source lines with the canonical snippet a
 
 | Control | Action |
 | --- | --- |
-| Top-bar `PROF` buttons | Workspaces 1–5; fewer on narrow screens. |
+| Top-bar numbered buttons | Switch to workspaces 1–5, including empty workspaces; fewer on narrow screens. |
+| Top-bar NETWORK | Open configured network settings. |
+| Top-bar UPTIME | Elapsed time as `HH:MM:SS`, or `Nd HH:MM` after a day. |
 | Left rail | Tracker, terminal, browser, files, screenshot and settings. |
 | Gear button | Show/hide volume, brightness, network and lock controls. |
 | Bottom dock | Media controls/title, launcher and lock. |
@@ -134,6 +168,7 @@ This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mo
 - Reserved edge sizes: `barHeight`, `railReserve` and `dockReserve` in the same theme file (76px top, 100px left and 98px bottom by default).
 - Frames/buttons: `quickshell/components/PixelFrame.qml` and `RetroButton.qml`.
 - Icons: `quickshell/assets/icons/`; rebuild with `python3 tools/generate-icons.py`.
+- Preferred apps: `quickshell/config/apps.json`, or your personal `~/.config/spidey/apps.json` override.
 - Telemetry/actions: `quickshell/scripts/system.py`.
 - Hyprland and lock screen: `config/hypr/`.
 

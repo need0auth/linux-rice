@@ -11,7 +11,7 @@ Singleton {
         network: {connected: false, interface: "", name: "CONNECTING"},
         volume: {available: false, percent: 0, muted: false},
         brightness: {available: false, percent: 0},
-        media: {available: false, playing: false, title: "No active transmission", artist: "Open a media player"}
+        media: {available: false, playing: false, player: "", title: "No active transmission", artist: ""}
     })
     property bool healthy: false
     property string error: "Waiting for telemetry"

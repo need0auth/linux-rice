@@ -1,0 +1,41 @@
+{
+  "terminal": [
+    ["kitty"],
+    ["foot"],
+    ["alacritty"],
+    ["wezterm"],
+    ["ghostty"]
+  ],
+  "browser": [
+    ["brave"],
+    ["brave-browser"],
+    ["brave-bin"],
+    ["chromium"],
+    ["google-chrome-stable"],
+    ["firefox"]
+  ],
+  "files": [
+    ["nemo", "{home}"],
+    ["thunar", "{home}"],
+    ["dolphin", "{home}"],
+    ["nautilus", "{home}"],
+    ["pcmanfm-qt", "{home}"],
+    ["pcmanfm", "{home}"],
+    ["caja", "{home}"],
+    ["cosmic-files", "{home}"]
+  ],
+  "network": [
+    ["nm-connection-editor"],
+    ["iwgtk"],
+    ["gnome-control-center", "network"]
+  ],
+  "launcher": [
+    ["rofi", "-show", "drun", "-theme", "{shell}/assets/rofi.rasi"],
+    ["fuzzel", "--background=122743ff", "--text=e4f8ffff", "--selection=49c7f4ff", "--selection-text=122743ff", "--border-color=49c7f4ff", "--border-width=2", "--border-radius=0", "--font=monospace:size=11"],
+    ["wofi", "--show", "drun"]
+  ],
+  "lock": [
+    ["hyprlock"],
+    ["swaylock", "-f", "-c", "080b12"]
+  ]
+}

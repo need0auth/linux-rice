@@ -11,7 +11,10 @@ return function(options)
         local command = "if command -v qs >/dev/null 2>&1; then exec qs \"$@\"; else exec quickshell \"$@\"; fi"
         return "env XDG_CONFIG_HOME=" .. quote(root) .. " sh -c " .. quote(command) .. " spidey -c spidey " .. (action or "--no-duplicate")
     end
-    local terminal = "kitty"
+    local function desktop_action(name)
+        return "env XDG_CONFIG_HOME=" .. quote(root) .. " python3 "
+            .. quote(root .. "/quickshell/spidey/scripts/system.py") .. " action " .. quote(name)
+    end
 
     hl.config({
         general = {
@@ -45,14 +48,14 @@ return function(options)
         end)
     end
 
-    hl.bind("SUPER + RETURN", hl.dsp.exec_cmd(terminal))
+    hl.bind("SUPER + RETURN", hl.dsp.exec_cmd(desktop_action("terminal")))
     hl.bind("SUPER + D", hl.dsp.exec_cmd(shell_command("ipc call dashboard toggle")))
-    hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("fuzzel --background=122743ff --text=e4f8ffff --selection=49c7f4ff --selection-text=122743ff --border-color=49c7f4ff --border-width=2 --border-radius=0 --font='monospace:size=11'"))
-    hl.bind("SUPER + E", hl.dsp.exec_cmd("xdg-open \"$HOME\""))
+    hl.bind("SUPER + SPACE", hl.dsp.exec_cmd(desktop_action("launcher")))
+    hl.bind("SUPER + E", hl.dsp.exec_cmd(desktop_action("files")))
     hl.bind("SUPER + Q", hl.dsp.window.close())
     hl.bind("SUPER + F", hl.dsp.window.fullscreen())
     hl.bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }))
-    hl.bind("SUPER + L", hl.dsp.exec_cmd("hyprlock --config " .. quote(root .. "/hypr-spidey/hyprlock.conf")))
+    hl.bind("SUPER + L", hl.dsp.exec_cmd(desktop_action("lock")))
     hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
     hl.bind("PRINT", hl.dsp.exec_cmd("region=$(slurp) && grim -g \"$region\" - | wl-copy"))
     for _, direction in ipairs({"left", "right", "up", "down"}) do
@@ -71,7 +74,7 @@ return function(options)
     hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
     hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl set +5%"), { locked = true, repeating = true })
     hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { locked = true, repeating = true })
-    hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-    hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
-    hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+    hl.bind("XF86AudioPlay", hl.dsp.exec_cmd(desktop_action("media-play-pause")), { locked = true })
+    hl.bind("XF86AudioNext", hl.dsp.exec_cmd(desktop_action("media-next")), { locked = true })
+    hl.bind("XF86AudioPrev", hl.dsp.exec_cmd(desktop_action("media-previous")), { locked = true })
 end

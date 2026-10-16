@@ -129,9 +129,19 @@ else
 fi
 
 optional kitty 'terminal and Super+Enter'
-optional fuzzel 'APPS launcher and Super+Space'
-optional xdg-open 'home-folder and browser fallback'
-optional firefox 'browser shortcut'
+optional rofi 'themed APPS launcher and Super+Space (Fuzzel/Wofi can be configured instead)'
+optional nemo 'default Files button and Super+E (other file managers can be configured)'
+browser_found=false
+for browser in brave brave-browser brave-bin chromium google-chrome-stable firefox; do
+    if command -v "$browser" >/dev/null 2>&1; then
+        pass "$browser — browser shortcut (Brave preferred)"
+        browser_found=true
+        break
+    fi
+done
+if ! "$browser_found"; then
+    optional brave 'preferred browser shortcut; keep your existing Brave installation'
+fi
 optional wpctl 'PipeWire volume controls (wireplumber)'
 optional brightnessctl 'hardware backlight controls'
 optional playerctl 'MPRIS media controls'

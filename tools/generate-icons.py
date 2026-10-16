@@ -70,11 +70,12 @@ class Sprite:
                 f'{body}</svg>\n')
 
 
-def bug(s, x=2, y=2):
-    """A slender 20 × 20 spider emblem: eight legs, head, waist, pointed body.
+def spider_emblem(s):
+    """A chest-emblem silhouette, centered on the x=12 pixel column.
 
-    The four separated angular leg pairs attach at the thorax. Upper legs
-    reach upward; lower legs reach downward. There are no antennae or pincers.
+    Four mirrored, angular leg pairs fan away from a narrow thorax. The head
+    stays distinct above it, and the long abdomen tapers to a one-pixel point.
+    Each limb is one pixel wide so the negative space survives at bar sizes.
     """
     def line(points):
         for (x0, y0), (x1, y1) in zip(points, points[1:]):
@@ -82,7 +83,7 @@ def bug(s, x=2, y=2):
             sx, sy = 1 if x0 < x1 else -1, 1 if y0 < y1 else -1
             error = dx + dy
             while True:
-                s.rect(x+x0, y+y0, 1, 1, "ink")
+                s.rect(x0, y0, 1, 1, "ink")
                 if (x0, y0) == (x1, y1):
                     break
                 twice_error = 2 * error
@@ -94,19 +95,20 @@ def bug(s, x=2, y=2):
                     y0 += sy
 
     legs = (
-        [(8,8), (6,5), (6,2), (4,0)],
-        [(8,9), (4,7), (3,4), (1,3)],
-        [(8,10), (4,12), (3,15), (1,16)],
-        [(8,11), (6,14), (6,17), (4,19)],
+        [(11,9), (8,7), (8,4), (6,2)],
+        [(11,10), (5,8), (3,4)],
+        [(11,11), (5,14), (3,19)],
+        [(11,12), (8,16), (8,19), (6,21)],
     )
     for points in legs:
         line(points)
-        line([(19-px, py) for px, py in points])
-    s.rect(x+9, y+4, 2, 2, "ink")       # Small, distinct head.
-    s.rect(x+9, y+6, 1, 3, "ink")       # Narrow neck / waist.
-    s.poly([(x+8,y+9), (x+12,y+9), (x+12,y+13),
-            (x+11,y+16), (x+10,y+19), (x+9,y+17),
-            (x+8,y+13)], "ink")        # Long, pointed abdomen.
+        line([(24-px, py) for px, py in points])
+    s.rect(11,5,3,3,"ink")       # Small head.
+    s.rect(12,8,1,4,"ink")       # Slim, centered thorax.
+    s.rect(11,11,3,2,"ink")
+    s.rect(10,13,5,2,"ink")      # Elongated abdomen, not a round bug body.
+    s.rect(11,15,3,3,"ink")
+    s.rect(12,18,1,3,"ink")
 
 
 def plate(base="peach", shade="red"):
@@ -120,7 +122,7 @@ def plate(base="peach", shade="red"):
 def marker(base):
     s = Sprite().octagon(1,2,22,22,6,"ink")
     s.octagon(2,2,20,20,5,base).rect(7,3,7,1,"paper")
-    bug(s)
+    spider_emblem(s)
     return s
 
 
@@ -129,7 +131,7 @@ def create_icons():
     s = Sprite().rect(2,1,22,23,"ink").rect(1,0,22,23,"ink")
     s.rect(2,1,20,21,"peach").rect(2,20,20,2,"red")
     s.rect(3,1,17,1,"paper").rect(2,2,1,16,"paper")
-    bug(s); icons["spider"] = s
+    spider_emblem(s); icons["spider"] = s
 
     s = Sprite().octagon(1,1,22,22,6,"ink")
     s.octagon(3,2,18,19,5,"coral")
