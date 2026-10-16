@@ -1,0 +1,8 @@
+singleton GreeterConfig 1.0 GreeterConfig.qml
+GreeterView 1.0 GreeterView.qml
+GreeterFrame 1.0 GreeterFrame.qml
+GreeterButton 1.0 GreeterButton.qml
+GreetdController 1.0 GreetdController.qml
+PreviewController 1.0 PreviewController.qml
+Preview 1.0 Preview.qml
+Desktop 1.0 Desktop.qml

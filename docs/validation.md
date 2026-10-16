@@ -2,7 +2,7 @@
 
 ## Checks completed in the cloud
 
-- **101 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection, provider-specific workspace dispatch, user-reference upgrades and session-scoped restarts.
+- **116 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection, provider-specific workspace dispatch, user-reference upgrades, session-scoped restarts, child-scoped lock assets, staged greeter updates and login service rollback.
 - Actual UI rendering, layer-shell panels under headless Sway and dashboard/settings IPC passed with **Quickshell 0.2.1** and current stable **0.3.2**, built from official sources against the cloud machine's **Qt 6.8.2**.
 - Demo data and real Linux telemetry were exercised. The decorative tracker collects no location data.
 - Layout checks include 1600×1000 and 1366×768; the smaller viewport scrolls to lower controls without reducing their size.
@@ -50,6 +50,16 @@ python3 tests/integration/upgrade.py
 ```
 
 ## Native Arch Linux
+
+The login checks exercise the real `Quickshell.Services.Greetd` module against a private fake greetd socket. They drive the production inputs through authentication failure, retry, cancel, secret and visible prompts, informational messages and session launch. Responses stay out of logs and files. A separate production preview never connects to the available fake socket. Current Quickshell 0.3.2 passed these checks locally; the real full-screen login surface also rendered under isolated headless Sway. These checks do not authenticate a real PAM account or switch a machine's login manager.
+
+The native workflow additionally runs the actual Hyprlock configuration on a private Sway compositor at 1600×1000 and 1366×768. The test checks the session-lock protocol, artwork placement and wallpaper pixels, without entering a password. To repeat these appearance checks on Arch:
+
+```sh
+sudo pacman -Syu --needed hyprlock mesa sway grim
+python3 tests/integration/greeter.py
+python3 tests/integration/lockscreen.py
+```
 
 **Native Arch CI passed** for the workarea fix at commit `af00a3a`: [Arch Linux run #5](https://github.com/need0auth/linux-rice/actions/runs/38863480122). The job installed signed official Arch packages, ran all 35 tests, installed the dotfiles into a temporary config root, verified the Hyprland config as an ordinary user, rendered a 1600×1000 Quickshell preview, exercised dashboard/settings IPC and read live telemetry. It also verified actual tiled-window geometry, popup stability and duplicate-launch behavior at both 1600×1000 and 1366×768. Package versions, logs, screenshots and geometry JSON are recorded in the run's `arch-validation` artifact.
 

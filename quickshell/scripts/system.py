@@ -258,7 +258,7 @@ def snapshot(demo: bool = False) -> dict:
     }
 
 
-def launch(candidates: Sequence[Sequence[str]]) -> dict:
+def launch(candidates: Sequence[Sequence[str]], environment: dict | None = None) -> dict:
     for argv in candidates:
         executable = shutil.which(argv[0])
         if executable is None:
@@ -268,6 +268,7 @@ def launch(candidates: Sequence[Sequence[str]]) -> dict:
                 [executable, *argv[1:]], stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 start_new_session=True,
+                **({"env": environment} if environment is not None else {}),
             )
         except OSError as exc:
             raise ActionError(f"Could not launch {argv[0]}: {exc.strerror or 'operating system error'}") from exc
@@ -281,6 +282,21 @@ def themed_command(program: str, config_relative: str) -> list[str]:
     config_root = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
     config = config_root / config_relative
     return [program, "--config", str(config)] if config.is_file() else [program]
+
+
+def lock_environment() -> dict:
+    """Resolve lock artwork/font paths without modifying the user's font setup."""
+    config_root = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    theme = config_root / "hypr-spidey"
+    environment = dict(os.environ)
+    environment.update({
+        "SPIDEY_LOCK_ASSETS": str((theme / "lock-assets").resolve()),
+        "SPIDEY_WALLPAPER": str(SHELL_ROOT.parent / "assets/wallpapers/spidey-city.png"),
+    })
+    fontconfig = theme / "fontconfig.conf"
+    if fontconfig.is_file():
+        environment["FONTCONFIG_FILE"] = str(fontconfig.resolve())
+    return environment
 
 
 def read_app_config(path: Path, *, optional: bool = False) -> dict:
@@ -396,7 +412,7 @@ def action(name: str, value: str | None = None) -> dict:
     elif name in commands:
         run_command(commands[name])
     elif name in APP_ACTIONS:
-        return launch(app_candidates(name))
+        return launch(app_candidates(name), lock_environment() if name == "lock" else None)
     elif name == "screenshot":
         return screenshot()
     else:

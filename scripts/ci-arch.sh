@@ -24,9 +24,9 @@ artifact_root=${SPIDEY_ARTIFACT_DIR:-"$test_root/artifacts"}
 mkdir -p -- "$artifact_root"
 
 bash scripts/check-arch.sh | tee "$artifact_root/requirements.log"
-pacman -Q hyprland quickshell qt6-base qt6-declarative qt6-svg python > "$artifact_root/versions.txt"
+pacman -Q hyprland quickshell qt6-base qt6-declarative qt6-svg python hyprlock mesa > "$artifact_root/versions.txt"
 python3 -m unittest discover -s tests -v
-bash -n scripts/install.sh scripts/uninstall.sh scripts/check-arch.sh scripts/ci-arch.sh
+bash -n scripts/install.sh scripts/uninstall.sh scripts/check-arch.sh scripts/ci-arch.sh scripts/install-login.sh config/greetd/start-greeter
 bash scripts/install.sh
 
 compositor_version=$(Hyprland --version)
@@ -106,5 +106,7 @@ ARTIFACT_ROOT="$artifact_root/workarea" python3 tests/integration/wayland_workar
 ARTIFACT_ROOT="$artifact_root/mpris" python3 tests/integration/mpris.py
 ARTIFACT_ROOT="$artifact_root/rofi" python3 tests/integration/rofi.py
 ARTIFACT_ROOT="$artifact_root/upgrade" python3 tests/integration/upgrade.py
+ARTIFACT_ROOT="$artifact_root/greeter" python3 tests/integration/greeter.py
+ARTIFACT_ROOT="$artifact_root/lockscreen" python3 tests/integration/lockscreen.py
 bash scripts/uninstall.sh
 printf 'Native Arch package, installer, config, QML and IPC checks passed.\n'

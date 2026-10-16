@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export SPIDEY_GREETER_ASSETS=/usr/local/share/spidey-greeter/assets
+export SPIDEY_GREETER_WALLPAPER=/usr/local/share/spidey-greeter/assets/wallpaper.png
+if command -v qs >/dev/null 2>&1; then
+    shell_command=qs
+else
+    shell_command=quickshell
+fi
+# greetd tracks Sway, so completing authentication must end its compositor too.
+# Quickshell exits after greetd acknowledges start_session. Also leave a failed
+# renderer through the same path so greetd can start a fresh login prompt.
+trap 'swaymsg exit >/dev/null 2>&1 || true' EXIT
+"$shell_command" --path /usr/local/share/spidey-greeter/greeter --no-duplicate

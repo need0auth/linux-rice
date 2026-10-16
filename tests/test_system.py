@@ -163,6 +163,27 @@ class ActionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": folder}):
             self.assertEqual(system.themed_command("hyprlock", "hypr-spidey/hyprlock.conf"), ["hyprlock"])
 
+    def test_lock_resolves_artwork_and_fonts_only_for_child_process(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / "source theme"
+            source.mkdir()
+            (source / "lock-assets").mkdir()
+            (source / "hyprlock.conf").write_text("# fixture")
+            (source / "fontconfig.conf").write_text("<fontconfig/>")
+            config_root = root / "custom config"
+            config_root.mkdir()
+            (config_root / "hypr-spidey").symlink_to(source, target_is_directory=True)
+            with patch.dict(system.os.environ, {"XDG_CONFIG_HOME": str(config_root), "FONTCONFIG_FILE": "/personal/fonts.conf"}):
+                before = dict(system.os.environ)
+                with patch.object(system.shutil, "which", side_effect=lambda name: "/usr/bin/hyprlock" if name == "hyprlock" else None), patch.object(system.subprocess, "Popen") as popen:
+                    system.action("lock")
+                    environment = popen.call_args.kwargs["env"]
+                    self.assertEqual(environment["SPIDEY_LOCK_ASSETS"], str(source / "lock-assets"))
+                    self.assertEqual(environment["FONTCONFIG_FILE"], str(source / "fontconfig.conf"))
+                    self.assertTrue(Path(environment["SPIDEY_WALLPAPER"]).is_file())
+                    self.assertEqual(dict(system.os.environ), before)
+
     def test_empty_xdg_config_home_uses_home_dot_config(self):
         with tempfile.TemporaryDirectory() as folder, patch.dict(system.os.environ, {"XDG_CONFIG_HOME": ""}), patch.object(system.Path, "home", return_value=Path(folder)):
             config = Path(folder) / ".config" / "hypr-spidey" / "hyprlock.conf"

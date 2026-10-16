@@ -6,7 +6,7 @@ A Hyprland + Quickshell desktop based on the supplied tracker reference: chunky 
 
 ![Tracker desktop panels](docs/preview.png)
 
-The shell provides numbered workspace buttons, an app rail, media dock, quick settings and a tracker dashboard. CPU, memory, storage, network, battery and media readings come from your machine. The map is decorative and collects no location data. Your wallpaper is left alone.
+The shell provides numbered workspace buttons, an app rail, media dock, quick settings and a tracker dashboard. CPU, memory, storage, network, battery and media readings come from your machine. The map is decorative and collects no location data. A matching Hyprlock screen and generated pixel-art city wallpaper are included. Applying the wallpaper and replacing the boot login screen are optional.
 
 The top bar, left rail and bottom dock reserve compositor space, so tiled windows stay clear of them. The tracker and quick settings are popups. Transparent areas around the bars pass clicks through.
 
@@ -116,11 +116,13 @@ The package command in step 1 includes the following tools. You can omit tools f
 | `brightnessctl` | Backlight controls, subject to hardware and user permissions. |
 | `nmcli`, `nm-connection-editor` | Connection names and settings, with an existing NetworkManager service. |
 | `grim`, `slurp`, `wl-copy` | Region screenshots and clipboard capture. |
-| `hyprlock` | Locking with the bundled cyan/navy config and Arch's PAM setup. |
+| `hyprlock` | Matching pixel-frame lock screen, city wallpaper and Arch's PAM authentication. |
 
 Missing tools or devices disable the corresponding readings/controls or produce an action message. CPU, RAM, storage and uptime need only Python and Linux's system interfaces. Audio routing, backlight permissions and locking depend on your existing desktop services and hardware.
 
 Use `bash scripts/check-arch.sh --all-tools --session` only when you want every optional tool to be required, including brightness and locking tools that may not apply to your setup.
+
+Press `Super + L` or use the dock's lock button to try the new lock screen. See [lock screen, boot login and wallpaper](docs/appearance.md) for the bundled wallpaper, the optional graphical greetd login screen, or colors for your existing Ly login. The normal dotfile installer keeps your current login manager.
 
 ## Preferred applications
 
@@ -204,7 +206,7 @@ qs -c spidey ipc call dashboard controls
 SPIDEY_PREVIEW=1 SPIDEY_DEMO=1 qs -p "$PWD/quickshell"
 ```
 
-This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mode is labeled and disables desktop actions. Omit `SPIDEY_DEMO` for real measurements. `SPIDEY_PREVIEW_WIDTH` and `SPIDEY_PREVIEW_HEIGHT` set the window size. No wallpaper asset is installed.
+This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mode is labeled and disables desktop actions. Omit `SPIDEY_DEMO` for real measurements. `SPIDEY_PREVIEW_WIDTH` and `SPIDEY_PREVIEW_HEIGHT` set the window size. The desktop wallpaper stays under your existing wallpaper manager; the generated image is available in `assets/wallpapers/`.
 
 - Colors/fonts: `quickshell/services/Theme.qml`.
 - Reserved edge sizes: `barHeight`, `railReserve` and `dockReserve` in the same theme file (76px top, 100px left and 98px bottom by default).
@@ -213,6 +215,8 @@ This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mo
 - Preferred apps: `quickshell/config/apps.json`, or your personal `~/.config/spidey/apps.json` override.
 - Telemetry/actions: `quickshell/scripts/system.py`.
 - Hyprland and lock screen: `config/hypr/`.
+- Boot login: `greeter/` and `config/greetd/`; [setup and Ly alternative](docs/appearance.md).
+- Generated wallpaper: `assets/wallpapers/spidey-city.png`.
 
 Spider badges now have a small head, narrow center, pointed abdomen and eight separated legs:
 

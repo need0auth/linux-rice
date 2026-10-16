@@ -1,0 +1,8 @@
+# Managed by Spidey Tracker login installer (format 1).
+# Authentication remains in greetd/PAM; Quickshell only renders the prompt.
+[terminal]
+vt = 1
+
+[default_session]
+command = "sway --config /usr/local/share/spidey-greeter/sway.conf"
+user = "greeter"
