@@ -1,6 +1,7 @@
 """Exercise real installation, safe migration and removal in isolated config roots."""
 
 from pathlib import Path
+import os
 import subprocess
 import tempfile
 import unittest
@@ -25,10 +26,10 @@ class InstallerTests(unittest.TestCase):
         self.base = Path(self.temporary.name)
         self.config_root = self.base / "config with spaces and ' apostrophe"
 
-    def run_script(self, name, *arguments, expected_code=0):
+    def run_script(self, name, *arguments, expected_code=0, environment=None):
         result = subprocess.run(
             ["bash", str(REPO_ROOT / "scripts" / name), "--config-root", str(self.config_root), *arguments],
-            cwd=self.base, capture_output=True, text=True, check=False,
+            cwd=self.base, capture_output=True, text=True, check=False, env=environment,
         )
         self.assertEqual(result.returncode, expected_code, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
         return result
@@ -184,6 +185,78 @@ class InstallerTests(unittest.TestCase):
         self.assert_links(RETIRED_LINKS)
         self.run_script("uninstall.sh")
         self.assert_absent(RETIRED_LINKS)
+
+    def test_relative_owned_links_are_reused_and_retired_safely(self):
+        for relative, source in LINKS + RETIRED_LINKS:
+            target = self.config_root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.symlink_to(os.path.relpath(REPO_ROOT / source, target.parent), target_is_directory=True)
+        result = self.run_script("install.sh")
+        self.assertEqual(result.stdout.count("Already linked:"), 2)
+        for relative, source in LINKS:
+            self.assertEqual((self.config_root / relative).resolve(), REPO_ROOT / source)
+        self.assert_absent(RETIRED_LINKS)
+        self.run_script("uninstall.sh")
+        self.assert_absent(LINKS)
+
+    def test_canonical_aliases_to_retired_sources_are_backed_up_and_upgraded(self):
+        aliases = (("quickshell/spidey", "quickshell-retro"), ("hypr-spidey", "config/hypr-retro"))
+        self.create_links(aliases)
+        self.run_script("install.sh")
+        self.assert_links()
+        for relative, source in aliases:
+            target = self.config_root / relative
+            backups = list(target.parent.glob(target.name + ".spidey-backup.*"))
+            self.assertEqual(len(backups), 1)
+            self.assertTrue(backups[0].is_symlink())
+            self.assertEqual(backups[0].readlink(), REPO_ROOT / source)
+
+    def test_full_upgrade_migrates_references_once_and_preserves_app_preferences(self):
+        self.create_links(RETIRED_LINKS)
+        startup = self.config_root / "hypr" / "autostart.lua"
+        startup.parent.mkdir()
+        original = ('dofile(config_root .. "/hypr-spidey-retro/rice.lua")({ config_root = config_root })\n'
+                    'hl.exec_cmd("qs -c spidey-retro")\n'
+                    'hl.exec_cmd("discord")\n')
+        startup.write_text(original)
+        kitty = self.config_root / "kitty" / "kitty.conf"
+        kitty.parent.mkdir()
+        kitty_original = 'font_size 13\ninclude ../kitty-spidey/kitty.conf\n'
+        kitty.write_text(kitty_original)
+        preferences = self.config_root / "spidey" / "apps.json"
+        preferences.parent.mkdir()
+        personal = '{"files": [["nemo", "{home}"]]}\n'
+        preferences.write_text(personal)
+        self.run_script("install.sh", "--dry-run")
+        self.assertEqual(startup.read_text(), original)
+        self.assertEqual(kitty.read_text(), kitty_original)
+        self.assertFalse(list(self.config_root.rglob("*.spidey-backup.*")))
+        self.assert_links(RETIRED_LINKS)
+        self.run_script("install.sh")
+        self.assert_links()
+        self.assert_absent(RETIRED_LINKS)
+        self.assertIn('"/hypr-spidey/rice.lua"', startup.read_text())
+        self.assertIn('"qs -c spidey --no-duplicate"', startup.read_text())
+        self.assertIn('hl.exec_cmd("discord")', startup.read_text())
+        self.assertTrue(kitty.read_text().splitlines()[1].lstrip().startswith("#"))
+        self.assertEqual(list(startup.parent.glob("autostart.lua.spidey-backup.*"))[0].read_text(), original)
+        self.assertEqual(list(kitty.parent.glob("kitty.conf.spidey-backup.*"))[0].read_text(), kitty_original)
+        backups = list(self.config_root.rglob("*.spidey-backup.*"))
+        self.run_script("install.sh")
+        self.assertEqual(list(self.config_root.rglob("*.spidey-backup.*")), backups)
+        self.assertEqual(preferences.read_text(), personal)
+
+    def test_no_restart_never_calls_quickshell_even_with_a_display(self):
+        executable = self.base / "bin" / "qs"
+        executable.parent.mkdir()
+        marker = self.base / "unexpected-quickshell"
+        executable.write_text(f'#!/bin/sh\ntouch "{marker}"\nexit 1\n')
+        executable.chmod(0o755)
+        environment = {**os.environ, "PATH": str(executable.parent) + os.pathsep + os.environ["PATH"],
+                       "WAYLAND_DISPLAY": "wayland-test", "XDG_RUNTIME_DIR": str(self.base)}
+        self.run_script("install.sh", "--no-restart", environment=environment)
+        self.assert_links()
+        self.assertFalse(marker.exists())
 
 
 if __name__ == "__main__":

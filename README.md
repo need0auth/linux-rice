@@ -32,7 +32,7 @@ Installation creates only these links, so keep this checkout in place:
 | `~/.config/quickshell/spidey` | `quickshell/` |
 | `~/.config/hypr-spidey` | `config/hypr/` |
 
-The installer does not edit your existing Hyprland config, run a package manager, enable services or replace your wallpaper. Conflicting files stop the entire preflight. Use `--backup` to move conflicts to unique backup paths. `--config-root /absolute/path` selects a custom root; export `XDG_CONFIG_HOME` to that root when starting the shell.
+The installer migrates recognizable old Spidey startup/source references in your Hyprland files and backs up every changed file. Other settings and personal app preferences are preserved. It does not run a package manager or enable services. Unrelated conflicting files stop the preflight; use `--backup` to preserve and replace those conflicts. `--config-root /absolute/path` selects a custom root; export `XDG_CONFIG_HOME` to that root when starting the shell.
 
 ### Connect it to Hyprland
 
@@ -120,16 +120,22 @@ If Brave is absent, the browser is not exporting a media session to your desktop
 
 ## Updating either previous version
 
-Before updating a running old installation, stop its shell while its config paths still exist:
+Update from this checkout and run the installer; you do not need to stop the old bar yourself:
 
 ```sh
-qs -c spidey-retro kill   # If the separate retro config is running
-qs -c spidey kill         # If the earlier default config is running
+git switch main
+git pull --ff-only
+bash scripts/install.sh --dry-run
+bash scripts/install.sh
 ```
 
-Then update your checkout to `main` and rerun `bash scripts/install.sh`. It reuses matching canonical links and removes only exact retired symlinks created by this checkout (`spidey-retro`, `hypr-spidey-retro` and `kitty-spidey`). Unknown files, replacement links and backups are preserved.
+The installer recognizes both previous layouts. It reuses canonical links (including equivalent relative links), backs up aliases to the retired source, and removes only this checkout's retired `spidey-retro`, `hypr-spidey-retro` and `kitty-spidey` links. Unknown files, foreign links and earlier backups stay intact. If you moved to another checkout, use `--backup` for conflicting canonical links rather than deleting your old files.
 
-Replace old `hypr-spidey-retro/rice.*` source lines with the canonical snippet above. Keep one source/autostart entry. The old `install-retro.sh` and `quickshell-retro/` paths are retired.
+Recognized `dofile`/`source` lines and plain Quickshell startup/IPC commands are migrated to the current names. Startup commands gain `--no-duplicate`. The former rice's wallpaper startup and Kitty theme include are commented out, leaving other wallpaper and terminal settings alone. Each changed file gets an adjacent `.spidey-backup.<timestamp>.<pid>` copy. External symlinks and complex expressions are left unchanged with a review notice.
+
+On an active Wayland desktop, it stops only verified Spidey instances belonging to this checkout on the current display, reloads Hyprland when available, and starts one current bar if one was already running. Other Quickshell configs and sessions remain running. `--no-restart` updates files without touching live processes or reloading Hyprland. Offline installs update files for your next login. Personal `~/.config/spidey/apps.json` overrides are never replaced.
+
+The old `install-retro.sh` and `quickshell-retro/` paths are retired.
 
 ## Controls
 

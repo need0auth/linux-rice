@@ -105,5 +105,6 @@ ARTIFACT_ROOT="$artifact_root/topbar" python3 tests/integration/topbar.py
 ARTIFACT_ROOT="$artifact_root/workarea" python3 tests/integration/wayland_workarea.py
 ARTIFACT_ROOT="$artifact_root/mpris" python3 tests/integration/mpris.py
 ARTIFACT_ROOT="$artifact_root/rofi" python3 tests/integration/rofi.py
+ARTIFACT_ROOT="$artifact_root/upgrade" python3 tests/integration/upgrade.py
 bash scripts/uninstall.sh
 printf 'Native Arch package, installer, config, QML and IPC checks passed.\n'

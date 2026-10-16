@@ -25,9 +25,12 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 config_root=$(realpath -m -- "$config_root")
 sources=("$repo_root/quickshell" "$repo_root/config/hypr" "$repo_root/quickshell-retro" "$repo_root/config/hypr-retro" "$repo_root/config/kitty")
 destinations=("$config_root/quickshell/spidey" "$config_root/hypr-spidey" "$config_root/quickshell/spidey-retro" "$config_root/hypr-spidey-retro" "$config_root/kitty-spidey")
+managed_link() {
+    [[ -L "$1" ]] && [[ $(realpath -m -- "$1") == $(realpath -m -- "$2") ]]
+}
 for i in "${!sources[@]}"; do
     destination=${destinations[$i]}
-    if [[ -L "$destination" ]] && [[ $(readlink -- "$destination") == "${sources[$i]}" ]]; then
+    if managed_link "$destination" "${sources[$i]}"; then
         printf 'Remove link: %s\n' "$destination"
         if ! "$dry_run"; then
             rm -- "$destination"

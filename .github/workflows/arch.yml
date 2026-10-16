@@ -54,6 +54,7 @@ jobs:
           from pathlib import Path
           root = Path('/tmp/spidey-arch-artifacts')
           reports = [root / 'sway-capabilities.txt', root / 'ci.log', *sorted((root / 'mpris').glob('*.json')),
+                     *sorted((root / 'upgrade').glob('*.json')), *sorted((root / 'upgrade').glob('*commands.log')),
                      *sorted((root / 'topbar').glob('*.log')),
                      *sorted((root / 'rofi').glob('*.json')), *sorted((root / 'rofi').glob('*.log')),
                      *sorted((root / 'workarea').glob('*.json')),

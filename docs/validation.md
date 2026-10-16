@@ -2,7 +2,7 @@
 
 ## Checks completed in the cloud
 
-- **65 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection and provider-specific workspace dispatch.
+- **101 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection, provider-specific workspace dispatch, user-reference upgrades and session-scoped restarts.
 - Actual UI rendering, layer-shell panels under headless Sway and dashboard/settings IPC passed with **Quickshell 0.2.1** and current stable **0.3.2**, built from official sources against the cloud machine's **Qt 6.8.2**.
 - Demo data and real Linux telemetry were exercised. The decorative tracker collects no location data.
 - Layout checks include 1600×1000 and 1366×768; the smaller viewport scrolls to lower controls without reducing their size.
@@ -37,6 +37,16 @@ The portable regression test starts its own headless Sway server, opens a real t
 ```sh
 sudo pacman -Syu --needed sway grim
 python3 tests/integration/wayland_workarea.py
+```
+
+## Installing over an older rice
+
+Installer fixtures cover both historical layouts, relative links, canonical aliases to retired sources, foreign replacements, original config backups, dry runs, and repeated upgrades. Reference migration preserves file permissions, CRLF and unrelated bytes; skips external symlinks and complex expressions; and leaves personal app preferences intact. Runtime fixtures verify exact instance IDs, current display and user ownership, deleted source paths, failure recovery and process reuse protection.
+
+The real `tests/integration/upgrade.py` starts its own Sway desktop and both old/current named shells beside an unrelated Quickshell window. It deletes the legacy source directories first to reproduce updating the checkout before running the installer. A dry run leaves the files and instances unchanged. Installation migrates the references, retires old links, preserves backups and preferences, and leaves one current bar plus the original unrelated window. Repeating installation keeps the same configuration and does not create additional backups. Arch CI runs this check and retains command logs and instance IDs.
+
+```sh
+python3 tests/integration/upgrade.py
 ```
 
 ## Native Arch Linux
