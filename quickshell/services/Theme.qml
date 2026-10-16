@@ -20,5 +20,11 @@ Singleton {
     readonly property string mono: "DejaVu Sans Mono"
     readonly property string pixel: pixelFont.name
     readonly property int barHeight: 76
+    readonly property int railWidth: 70
+    readonly property int railMargin: 18
+    readonly property int railReserve: railMargin + railWidth + 12
+    readonly property int dockHeight: 78
+    readonly property int dockMargin: 20
+    readonly property int dockReserve: dockHeight + dockMargin
     FontLoader { id: pixelFont; source: "../assets/fonts/Silkscreen-Regular.ttf" }
 }

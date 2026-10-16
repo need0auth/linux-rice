@@ -21,7 +21,7 @@ jobs:
       - name: Install signed Arch packages
         run: >-
           pacman -Syu --noconfirm --needed
-          git python hyprland quickshell qt6-declarative qt6-svg ttf-dejavu
+          git python hyprland quickshell qt6-declarative qt6-svg ttf-dejavu sway grim
       - uses: actions/checkout@v4
         with:
           persist-credentials: false

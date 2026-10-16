@@ -101,5 +101,6 @@ assert all(0 <= data[key] <= 100 for key in ('cpu', 'memory', 'disk'))
 assert data['uptime'] > 0
 print('Live Linux telemetry and dashboard IPC passed')
 PY
+ARTIFACT_ROOT="$artifact_root/workarea" python3 tests/integration/wayland_workarea.py
 bash scripts/uninstall.sh
 printf 'Native Arch package, installer, config, QML and IPC checks passed.\n'

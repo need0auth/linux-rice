@@ -9,7 +9,7 @@ return function(options)
     local function shell_command(action)
         -- Pass arguments to the selected executable rather than interpolate them into a shell command.
         local command = "if command -v qs >/dev/null 2>&1; then exec qs \"$@\"; else exec quickshell \"$@\"; fi"
-        return "env XDG_CONFIG_HOME=" .. quote(root) .. " sh -c " .. quote(command) .. " spidey -c spidey " .. (action or "")
+        return "env XDG_CONFIG_HOME=" .. quote(root) .. " sh -c " .. quote(command) .. " spidey -c spidey " .. (action or "--no-duplicate")
     end
     local terminal = "kitty"
 

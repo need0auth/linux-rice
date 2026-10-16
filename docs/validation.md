@@ -11,6 +11,19 @@
 
 Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings and an absent Hyprland socket under Sway are expected.
 
+## Window workarea regression
+
+The original left rail and dock used non-exclusive overlay surfaces. An actual tiled test window under Sway occupied `(0, 76, 1600, 924)` on a 1600×1000 display and extended behind both bars.
+
+The corrected layer-shell surfaces reserve 100px on the left and 98px at the bottom. The same test window occupies `(100, 76, 1500, 826)`. At 1366×768 it occupies `(100, 76, 1266, 594)`. Dashboard/settings toggles leave the workarea unchanged; another launch with `--no-duplicate` exits without adding reserved space. A real virtual-pointer check also verified that empty regions around the left rail and bottom dock pass clicks to a floating test window behind them.
+
+The portable regression test starts its own headless Sway server, opens a real tiled Qt window, measures compositor-reported geometry at both resolutions, and checks popup/duplicate behavior. It isolates compositor sockets and stops only its own processes. Arch CI runs it and saves screenshots and geometry JSON:
+
+```sh
+sudo pacman -Syu --needed sway grim
+python3 tests/integration/wayland_workarea.py
+```
+
 ## Native Arch Linux
 
 **Native Arch CI passed** for implementation commit `54d14d4`: [Arch Linux run #1](https://github.com/need0auth/linux-rice/actions/runs/38794450322). The job installed signed official Arch packages, ran all 35 tests, installed the dotfiles into a temporary config root, verified the Hyprland config as an ordinary user, rendered a 1600×1000 Quickshell preview, exercised dashboard/settings IPC and read live telemetry. Package versions, logs and the screenshot are recorded in the run's `arch-validation` artifact.
@@ -25,7 +38,7 @@ Stable `quickshell` is an official Arch package, as documented in [Quickshell's 
 
 ## Reproduce
 
-Install the README requirements on Arch, then run as a normal user:
+Install the README requirements plus `sway` and `grim` for the workarea regression, then run as a normal user:
 
 ```sh
 bash scripts/check-arch.sh

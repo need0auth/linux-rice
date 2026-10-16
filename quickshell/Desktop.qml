@@ -19,12 +19,18 @@ Scope {
             }
             PanelWindow {
                 screen: display.modelData
-                anchors { left: true; top: true }
-                margins { left: 18; top: 168 }
-                implicitWidth: 70; implicitHeight: 388
-                exclusionMode: ExclusionMode.Ignore
+                // Three anchors let layer-shell reserve this entire edge.
+                anchors { left: true; top: true; bottom: true }
+                implicitWidth: Theme.railReserve
+                exclusiveZone: Theme.railReserve
                 color: "transparent"
-                SideBar { anchors.fill: parent }
+                mask: Region { item: rail }
+                SideBar {
+                    id: rail
+                    x: Theme.railMargin
+                    y: Math.min(168 - Theme.barHeight, Math.max(0, parent.height - height - 12))
+                    width: Theme.railWidth; height: 388
+                }
             }
             PanelWindow {
                 screen: display.modelData
@@ -50,13 +56,18 @@ Scope {
             }
             PanelWindow {
                 screen: display.modelData
-                anchors { left: true; bottom: true }
-                margins { left: 108; bottom: 20 }
-                implicitWidth: Math.max(480, Math.min(710, display.modelData.width - 650))
-                implicitHeight: 78
-                exclusionMode: ExclusionMode.Ignore
+                anchors { left: true; right: true; bottom: true }
+                implicitHeight: Theme.dockReserve
+                exclusiveZone: Theme.dockReserve
                 color: "transparent"
-                BottomBar { anchors.fill: parent }
+                // Only the visible dock receives input, not the empty strip.
+                mask: Region { item: dock }
+                BottomBar {
+                    id: dock
+                    x: 8
+                    width: Math.min(710, Math.max(480, display.modelData.width - 650), parent.width - 16)
+                    height: Theme.dockHeight
+                }
             }
             PanelWindow {
                 screen: display.modelData

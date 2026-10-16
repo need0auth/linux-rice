@@ -8,6 +8,8 @@ A Hyprland + Quickshell desktop based on the supplied tracker reference: chunky 
 
 The shell provides workspace profiles, an app rail, media dock, quick settings and a tracker dashboard. CPU, memory, storage, network, battery and media readings come from your machine. The map is decorative and collects no location data. Your wallpaper is left alone.
 
+The top bar, left rail and bottom dock reserve compositor space, so tiled windows stay clear of them. The tracker and quick settings are popups. Transparent areas around the bars pass clicks through.
+
 ## Install on Arch Linux
 
 Use an up-to-date Arch installation and an existing working Hyprland session. Install the shell requirements with a full system upgrade:
@@ -52,10 +54,12 @@ Keep your existing monitor definitions, keyboard layout and device settings. The
 
 ```sh
 hyprctl reload
-qs -c spidey
+qs -c spidey --no-duplicate --daemonize
 ```
 
 Use `quickshell` in place of `qs` if that is your executable name. Complete starter configs are available: `Hyprland --config ~/.config/hypr-spidey/hyprland.lua` for 0.55+, or the `.conf` equivalent for older supported versions. The starter uses a US keyboard; change `kb_layout` to `br` if appropriate.
+
+`rice.lua` already autostarts the shell, using `--no-duplicate`. If you prefer launching it from your own `autostart.lua`, pass `autostart = false` in the existing `rice.lua` options and use `hl.exec_cmd("qs -c spidey --no-duplicate")` in your startup handler. Keep one startup entry.
 
 ### Optional desktop controls
 
@@ -127,6 +131,7 @@ SPIDEY_PREVIEW=1 SPIDEY_DEMO=1 qs -p "$PWD/quickshell"
 This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mode is labeled and disables desktop actions. Omit `SPIDEY_DEMO` for real measurements. `SPIDEY_PREVIEW_WIDTH` and `SPIDEY_PREVIEW_HEIGHT` set the window size. No wallpaper asset is installed.
 
 - Colors/fonts: `quickshell/services/Theme.qml`.
+- Reserved edge sizes: `barHeight`, `railReserve` and `dockReserve` in the same theme file (76px top, 100px left and 98px bottom by default).
 - Frames/buttons: `quickshell/components/PixelFrame.qml` and `RetroButton.qml`.
 - Icons: `quickshell/assets/icons/`; rebuild with `python3 tools/generate-icons.py`.
 - Telemetry/actions: `quickshell/scripts/system.py`.
