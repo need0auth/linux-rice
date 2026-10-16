@@ -58,6 +58,7 @@ jobs:
                      *sorted((root / 'greeter').glob('*.json')), *sorted((root / 'greeter').glob('*.log')),
                      *sorted((root / 'lockscreen').glob('*.json')), *sorted((root / 'lockscreen').glob('*.log')),
                      *sorted((root / 'topbar').glob('*.log')),
+                     *sorted((root / 'volume').glob('*.json')), *sorted((root / 'volume').glob('*.log')),
                      *sorted((root / 'rofi').glob('*.json')), *sorted((root / 'rofi').glob('*.log')),
                      *sorted((root / 'workarea').glob('*.json')),
                      *sorted((root / 'workarea').glob('*-shell.log')),

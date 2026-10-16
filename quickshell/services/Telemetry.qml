@@ -15,6 +15,7 @@ Singleton {
     })
     property bool healthy: false
     property string error: "Waiting for telemetry"
+    readonly property bool actionBusy: action.running
     readonly property string script: Quickshell.shellDir + "/scripts/system.py"
     function refresh() { if (!sampler.running) sampler.running = true; }
     function act(name, value) {

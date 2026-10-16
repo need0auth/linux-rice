@@ -16,7 +16,7 @@ These steps are for a first installation on Arch with an existing working Hyprla
 
 ### 1. Install packages and link the dotfiles
 
-Install the shell and the tools used by the current buttons. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**:
+Install the shell and the tools used by the current buttons, including `wpctl` from WirePlumber for the volume slider and mute control. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**:
 
 ```sh
 sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
@@ -103,7 +103,7 @@ From your Arch Hyprland desktop, run:
 bash scripts/check-arch.sh --session
 ```
 
-Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
+Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Click the top-bar speaker/percentage to mute and unmute; open its adjacent `v` button and drag the volume slider to check audio adjustment. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
 
 The package command in step 1 includes the following tools. You can omit tools for controls you do not use:
 
@@ -111,7 +111,7 @@ The package command in step 1 includes the following tools. You can omit tools f
 | --- | --- |
 | `kitty`, your existing Brave installation, `nemo` | Default terminal, browser and files. Kitty keeps your normal configuration. |
 | `rofi` | APPS launcher with the cyan/navy/pastel theme; Fuzzel and Wofi are fallbacks. |
-| `wpctl` from `wireplumber` | Volume and mute, with an existing working PipeWire session. |
+| `wpctl` from `wireplumber` | The 0–100% volume slider and mute, with an existing working PipeWire session. |
 | `playerctl` | Playback and metadata from MPRIS players. |
 | `brightnessctl` | Backlight controls, subject to hardware and user permissions. |
 | `nmcli`, `nm-connection-editor` | Connection names and settings, with an existing NetworkManager service. |
@@ -163,15 +163,23 @@ Update from this checkout and run the installer; you do not need to stop the old
 ```sh
 git switch main
 git pull --ff-only
+sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
+  kitty rofi nemo wireplumber playerctl brightnessctl grim slurp wl-clipboard \
+  hyprlock networkmanager nm-connection-editor
 bash scripts/install.sh --dry-run
 bash scripts/install.sh
+bash scripts/check-arch.sh
 ```
+
+Run this from your existing checkout as your normal desktop user; only the package command uses `sudo`. The package list matches the first-install requirements, so new controls have their tools after an update. Keep your existing working PipeWire and network setup. From your Hyprland desktop, finish with `bash scripts/check-arch.sh --session` and try the updated controls described below.
 
 The installer recognizes both previous layouts. It reuses canonical links (including equivalent relative links), backs up aliases to the retired source, and removes only this checkout's retired `spidey-retro`, `hypr-spidey-retro` and `kitty-spidey` links. Unknown files, foreign links and earlier backups stay intact. If you moved to another checkout, use `--backup` for conflicting canonical links rather than deleting your old files.
 
 Recognized `dofile`/`source` lines and plain Quickshell startup/IPC commands are migrated to the current names. Startup commands gain `--no-duplicate`. The former rice's wallpaper startup and Kitty theme include are commented out, leaving other wallpaper and terminal settings alone. Each changed file gets an adjacent `.spidey-backup.<timestamp>.<pid>` copy. External symlinks and complex expressions are left unchanged with a review notice.
 
 On an active Wayland desktop, it stops only verified Spidey instances belonging to this checkout on the current display, reloads Hyprland when available, and starts one current bar if one was already running. Other Quickshell configs and sessions remain running. `--no-restart` updates files without touching live processes or reloading Hyprland. Offline installs update files for your next login. Personal `~/.config/spidey/apps.json` overrides are never replaced.
+
+If you previously installed the optional graphical greetd login, also refresh its separate root-owned snapshot using the [login update instructions](docs/appearance.md#updates-and-rollback). Skip that step when keeping Ly or another login manager.
 
 The old `install-retro.sh` and `quickshell-retro/` paths are retired.
 
@@ -182,6 +190,8 @@ The old `install-retro.sh` and `quickshell-retro/` paths are retired.
 | Top-bar numbered buttons | Switch to workspaces 1–5, including empty workspaces; fewer on narrow screens. |
 | Top-bar NETWORK | Open configured network settings. |
 | Top-bar UPTIME | Elapsed time as `HH:MM:SS`, or `Nd HH:MM` after a day. |
+| Top-bar speaker/percentage | Toggle audio mute. |
+| Top-bar `v` beside volume | Open the pixel-styled 0–100% volume slider. |
 | Left rail | Tracker, terminal, browser, files, screenshot and settings. |
 | Gear button | Show/hide volume, brightness, network and lock controls. |
 | Bottom dock | Media controls/title, launcher and lock. |
@@ -193,7 +203,13 @@ The old `install-retro.sh` and `quickshell-retro/` paths are retired.
 | `Super + 1…0` | Workspace; add Shift to move the window there. |
 | `Super + L`, `Print` | Lock; select and copy a screenshot. |
 
-The dashboard screenshot button saves to `~/Pictures/SpideyTracker/`. Both popups start open and can be closed. Short displays scroll the tracker without shrinking controls. Terminal IPC:
+Click or drag the volume slider, or use Left/Right for 1% steps and Home/End for 0%/100%. Close its popup with `X` or Escape.
+
+![Pixel volume slider](docs/volume-slider.png)
+
+Keyboard popup controls use current Quickshell (0.3.2+). Older 0.2.1 builds support the slider with the mouse and its close button.
+
+The dashboard screenshot button saves to `~/Pictures/SpideyTracker/`. The dashboard and quick settings start open and can be closed; the volume popup starts closed. Short displays scroll the tracker without shrinking controls. Terminal IPC:
 
 ```sh
 qs -c spidey ipc call dashboard toggle

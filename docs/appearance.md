@@ -84,7 +84,15 @@ Use your Linux username and password at the prompt. Authentication errors let yo
 
 ### Updates and rollback
 
-After `git pull`, rerun `sudo bash scripts/install-login.sh --install` to refresh the system snapshot. Customized `greeter/session.json`, `sway.conf` and the managed greetd configuration are preserved. Replaced snapshots and configurations have adjacent `.spidey-backup.*` copies. The ordinary desktop installer does not refresh this separate system installation.
+Complete the [desktop update](../README.md#updating-either-previous-version) first. If you already installed this graphical greetd login, refresh its separate system snapshot from the checkout:
+
+```sh
+sudo pacman -Syu --needed greetd sway quickshell qt6-svg ttf-dejavu dbus python
+bash scripts/install-login.sh --install --dry-run
+sudo bash scripts/install-login.sh --install
+```
+
+Customized `greeter/session.json`, `sway.conf` and the managed greetd configuration are preserved. Replaced snapshots and configurations have adjacent `.spidey-backup.*` copies. The ordinary desktop installer does not refresh this separate system installation. Updating does not need `--enable` again; the new appearance appears the next time the login screen starts. Skip these commands if you kept Ly or another login manager.
 
 To return to Ly, switch to a TTY such as `Ctrl + Alt + F3`, log in and run:
 

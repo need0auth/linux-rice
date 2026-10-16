@@ -13,6 +13,12 @@ Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings 
 
 ## App actions and browser media
 
+The volume integration test drives the production top-bar popup with real Qt pointer and keyboard events, the actual Python action bridge, and a private fake `wpctl`. It checks mute, percentage setting, a final drag queued behind a busy action, 0–100% bounds, external volume changes, unavailable devices and closing. It cannot modify the machine's audio. Quickshell 0.3.2 passed keyboard and pointer checks; 0.2.1 passed pointer controls and the explicit close button. A separate private Sway check opened the real layer-shell popup using a Wayland virtual pointer and confirmed its 300×156 layout below the bar.
+
+```sh
+python3 tests/integration/volume.py
+```
+
 App configuration tests verify Brave preference, direct file-manager launches that avoid folder MIME handlers, personal JSON overrides, literal argument handling, Rofi terminal selection and useful errors for missing network tools. Defaults are Kitty, Brave and Nemo. The provided Hyprland app shortcuts share the same configuration.
 
 An actual Rofi 1.7.5 window rendered the bundled theme under an isolated Xvfb server in the cloud. The public `system.py action launcher` path opened a temporary `Terminal=true` desktop entry in the configured terminal, including an executable path with a space and custom arguments. The portable `tests/integration/rofi.py` retains this check and runs in native Arch CI; it requires `rofi` and `xorg-server-xvfb` when run on Arch. The test isolates display sockets, desktop entries and all config directories. It also checks theme parsing through `-dump-theme`: Rofi 2.0's standalone `-rasi-validate` calls display cleanup before backend initialization and crashes even after the real launcher checks pass.

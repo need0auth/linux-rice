@@ -59,7 +59,7 @@ Item {
             Item { Layout.fillWidth: true }
             Readout { visible: root.width > 1240; label: "UPTIME"; value: root.formatUptime(Telemetry.data.uptime); implicitWidth: 128; tone: Theme.mint }
             Readout { visible: root.width > 1160; label: "NETWORK"; value: Telemetry.data.network.connected ? "LINKED" : "OFFLINE"; icon: Telemetry.data.network.connected ? "wifi" : "offline"; implicitWidth: 114; interactive: true; hint: "Open network settings"; onClicked: Telemetry.act("network") }
-            RetroButton { compact: true; width: 86; icon: Telemetry.data.volume.muted ? "muted" : "volume"; label: Telemetry.data.volume.available ? Math.round(Telemetry.data.volume.percent) + "%" : "--"; tone: Theme.peach; hint: "Mute audio / adjust in controls"; onClicked: Telemetry.act("volume-mute") }
+            VolumeControl { }
             Readout { visible: Telemetry.data.battery.present && root.width > 1000; label: "POWER"; value: Math.round(Telemetry.data.battery.percent) + "%"; icon: Telemetry.data.battery.charging ? "plug" : "battery"; implicitWidth: 100; tone: Theme.mint }
             Readout { label: Qt.formatDateTime(clock.date, "ddd dd").toUpperCase(); value: Qt.formatDateTime(clock.date, "hh:mm"); implicitWidth: 88; tone: Theme.peach }
             RetroButton { icon: "mask"; hint: "Toggle tracker / Super+D"; width: 48; tone: Theme.coral; selected: TrackerState.dashboardOpen; onClicked: TrackerState.toggle() }

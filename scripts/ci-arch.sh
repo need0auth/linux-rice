@@ -102,6 +102,7 @@ assert data['uptime'] > 0
 print('Live Linux telemetry and dashboard IPC passed')
 PY
 ARTIFACT_ROOT="$artifact_root/topbar" python3 tests/integration/topbar.py
+ARTIFACT_ROOT="$artifact_root/volume" python3 tests/integration/volume.py
 ARTIFACT_ROOT="$artifact_root/workarea" python3 tests/integration/wayland_workarea.py
 ARTIFACT_ROOT="$artifact_root/mpris" python3 tests/integration/mpris.py
 ARTIFACT_ROOT="$artifact_root/rofi" python3 tests/integration/rofi.py
