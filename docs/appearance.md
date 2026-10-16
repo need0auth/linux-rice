@@ -32,6 +32,8 @@ If you use swww, use `swww img` with the same path. Set that image in your exist
 
 This is an optional replacement for Ly. It uses a root-owned snapshot rather than loading code from your writable checkout. Keep Ly installed for rollback. A Quickshell panel by itself cannot authenticate a user or securely lock a session; this greeter uses `Quickshell.Services.Greetd` and the real greetd conversation.
 
+![Graphical login design preview](login-preview.png)
+
 Install the additional packages on Arch, after completing the desktop installation:
 
 ```sh

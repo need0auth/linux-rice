@@ -65,7 +65,9 @@ jobs:
           for path in reports:
               if not path.is_file():
                   continue
-              tail = '\n'.join(path.read_text(errors='replace').splitlines()[-45:])[-6000:]
+              # GitHub truncates long annotation messages in the public run
+              # view. Keep the actual failure at the end readable there too.
+              tail = '\n'.join(path.read_text(errors='replace').splitlines()[-25:])[-2800:]
               message = (path.name + '\n' + tail).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
               print(f'::error title=Arch diagnostic::{message}')
           PY

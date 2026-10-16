@@ -78,7 +78,7 @@ Stable `quickshell` is an official Arch package, as documented in [Quickshell's 
 Install the README requirements plus the integration-test tools, then run as a normal user:
 
 ```sh
-sudo pacman -Syu --needed sway grim rofi xorg-server-xvfb playerctl dbus python-gobject
+sudo pacman -Syu --needed sway grim rofi xorg-server-xvfb playerctl dbus python-gobject hyprlock mesa
 bash scripts/check-arch.sh
 bash scripts/ci-arch.sh
 ```
