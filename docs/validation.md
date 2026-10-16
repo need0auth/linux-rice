@@ -11,6 +11,15 @@
 
 Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings and an absent Hyprland socket under Sway are expected.
 
+The [spider badge sheet](spider-icons.png) shows the reference's broad body and eight short, stepped legs across the four badge colors. To regenerate the committed SVG assets from their source:
+
+```sh
+python3 tools/generate-icons.py
+git diff -- quickshell/assets/icons/
+```
+
+A deterministic regeneration leaves the SVG files unchanged. Compare the sheet with the [desktop preview](preview.png) and [login preview](login-preview.png) to assess the emblem at its actual UI sizes.
+
 ## App actions and browser media
 
 The volume integration test drives the production top-bar popup with real Qt pointer and keyboard events, the actual Python action bridge, and a private fake `wpctl`. It checks mute, percentage setting, a final drag queued behind a busy action, 0–100% bounds, external volume changes, unavailable devices and closing. It cannot modify the machine's audio. Quickshell 0.3.2 passed keyboard and pointer checks; 0.2.1 passed pointer controls and the explicit close button. A separate private Sway check opened the real layer-shell popup using a Wayland virtual pointer and confirmed its 300×156 layout below the bar.

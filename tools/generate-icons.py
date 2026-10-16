@@ -70,45 +70,34 @@ class Sprite:
                 f'{body}</svg>\n')
 
 
+SPIDER_ROWS = (
+    "....##....##....",
+    "....##.##.##....",
+    ".##.##.##.##.##.",
+    ".##..######..##.",
+    ".###.######.###.",
+    "..############..",
+    "....########....",
+    "....########....",
+    "..############..",
+    ".###.######.###.",
+    ".##..######..##.",
+    ".##.########.##.",
+    "....##.##.##....",
+    "....##....##....",
+)
+
+
 def spider_emblem(s):
-    """A chest-emblem silhouette, centered on the x=12 pixel column.
+    """The reference badge's squat body and eight short, thick stepped legs.
 
-    Four mirrored, angular leg pairs fan away from a narrow thorax. The head
-    stays distinct above it, and the long abdomen tapers to a one-pixel point.
-    Each limb is one pixel wide so the negative space survives at bar sizes.
+    Keep the silhouette on a fixed integer grid so every badge uses the same
+    compact shape and the notches between its legs survive at small sizes.
     """
-    def line(points):
-        for (x0, y0), (x1, y1) in zip(points, points[1:]):
-            dx, dy = abs(x1-x0), -abs(y1-y0)
-            sx, sy = 1 if x0 < x1 else -1, 1 if y0 < y1 else -1
-            error = dx + dy
-            while True:
-                s.rect(x0, y0, 1, 1, "ink")
-                if (x0, y0) == (x1, y1):
-                    break
-                twice_error = 2 * error
-                if twice_error >= dy:
-                    error += dy
-                    x0 += sx
-                if twice_error <= dx:
-                    error += dx
-                    y0 += sy
-
-    legs = (
-        [(11,9), (8,7), (8,4), (6,2)],
-        [(11,10), (5,8), (3,4)],
-        [(11,11), (5,14), (3,19)],
-        [(11,12), (8,16), (8,19), (6,21)],
-    )
-    for points in legs:
-        line(points)
-        line([(24-px, py) for px, py in points])
-    s.rect(11,5,3,3,"ink")       # Small head.
-    s.rect(12,8,1,4,"ink")       # Slim, centered thorax.
-    s.rect(11,11,3,2,"ink")
-    s.rect(10,13,5,2,"ink")      # Elongated abdomen, not a round bug body.
-    s.rect(11,15,3,3,"ink")
-    s.rect(12,18,1,3,"ink")
+    for y, row in enumerate(SPIDER_ROWS, start=5):
+        for x, pixel in enumerate(row, start=4):
+            if pixel == "#":
+                s.rect(x, y, 1, 1, "ink")
 
 
 def plate(base="peach", shade="red"):

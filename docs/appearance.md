@@ -1,6 +1,6 @@
 # Lock screen, boot login and wallpaper
 
-The lock screen and graphical login share the desktop's cyan pixel frames, navy panels, peach keys and mask badges. Hyprlock protects an existing session. For boot login, Quickshell renders a greetd prompt inside a restricted Sway session; greetd handles authentication through PAM and starts Hyprland after successful authentication. Installing the desktop rice does not change your login manager.
+The lock screen and graphical login share the desktop's cyan pixel frames, navy panels, peach keys and pixel badges. The graphical login uses the same broad-bodied spider emblem as the desktop. Hyprlock protects an existing session. For boot login, Quickshell renders a greetd prompt inside a restricted Sway session; greetd handles authentication through PAM and starts Hyprland after successful authentication. Installing the desktop rice does not change your login manager.
 
 ## Lock screen
 
@@ -92,7 +92,7 @@ bash scripts/install-login.sh --install --dry-run
 sudo bash scripts/install-login.sh --install
 ```
 
-Customized `greeter/session.json`, `sway.conf` and the managed greetd configuration are preserved. Replaced snapshots and configurations have adjacent `.spidey-backup.*` copies. The ordinary desktop installer does not refresh this separate system installation. Updating does not need `--enable` again; the new appearance appears the next time the login screen starts. Skip these commands if you kept Ly or another login manager.
+Customized `greeter/session.json`, `sway.conf` and the managed greetd configuration are preserved. Replaced snapshots and configurations have adjacent `.spidey-backup.*` copies. The ordinary desktop installer does not refresh this separate system installation. Run this refresh to bring the updated spider badge into an already-installed greeter. Updating does not need `--enable` again; the new appearance appears the next time the login screen starts. Skip these commands if you kept Ly or another login manager.
 
 To return to Ly, switch to a TTY such as `Ctrl + Alt + F3`, log in and run:
 
