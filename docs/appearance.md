@@ -10,9 +10,11 @@ Install the packages and dotfiles using the [first-install instructions](../READ
 python3 "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/spidey/scripts/system.py" action lock
 ```
 
-The action supplies the panel artwork, bundled city wallpaper and Silkscreen font paths to Hyprlock. The font is scoped to the lock process. The password field uses a regular monospace font for readability, with mint authentication, coral failure and peach Caps Lock indicators. Hyprlock continues using Arch's PAM configuration.
+The action supplies the panel artwork, bundled city wallpaper and Silkscreen font paths to Hyprlock. Its header uses the same red Spidey mask, white eyes and navy outline as the desktop icons. The font is scoped to the lock process. The password field uses a regular monospace font for readability, with mint authentication, coral failure and peach Caps Lock indicators. Hyprlock continues using Arch's PAM configuration.
 
-Customize [hyprlock.conf](../config/hypr/hyprlock.conf) and [the panel artwork generator](../tools/generate-lock-assets.py). Keep using the lock action when launching this theme: a bare `hyprlock` command does not receive its asset and font paths. If you already use an idle manager, set its lock command to the action above; the rice does not install or configure idle locking.
+![Shared red Spidey mask artwork](mask-icons.png)
+
+Customize [hyprlock.conf](../config/hypr/hyprlock.conf) and [the panel artwork generator](../tools/generate-lock-assets.py). After editing the shared mask drawing, rebuild both committed assets with `python3 tools/generate-icons.py` and `python3 tools/generate-lock-assets.py`. Normal installs and updates use the bundled files. Keep using the lock action when launching this theme: a bare `hyprlock` command does not receive its asset and font paths. If you already use an idle manager, set its lock command to the action above; the rice does not install or configure idle locking.
 
 ## Generated wallpaper
 

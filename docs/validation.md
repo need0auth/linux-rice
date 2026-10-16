@@ -11,14 +11,15 @@
 
 Screenshots show the 0.3.2 runtime with demo telemetry. Offscreen-mask warnings and an absent Hyprland socket under Sway are expected.
 
-The [spider badge sheet](spider-icons.png) shows the reference's broad body and eight short, stepped legs across the four badge colors. To regenerate the committed SVG assets from their source:
+The [spider badge sheet](spider-icons.png) shows the reference's broad body and eight short, stepped legs across the four badge colors. The [mask sheet](mask-icons.png) compares the red Spidey mask used by desktop icons and the lock-screen header. Both mask assets use one pixel drawing. To regenerate the committed SVG and lock-screen PNG assets from their sources:
 
 ```sh
 python3 tools/generate-icons.py
-git diff -- quickshell/assets/icons/
+python3 tools/generate-lock-assets.py
+git diff -- quickshell/assets/icons/ config/hypr/lock-assets/
 ```
 
-A deterministic regeneration leaves the SVG files unchanged. Compare the sheet with the [desktop preview](preview.png) and [login preview](login-preview.png) to assess the emblem at its actual UI sizes.
+A deterministic regeneration leaves these generated files unchanged. Compare the sheets with the [desktop preview](preview.png) and [login preview](login-preview.png) to assess the artwork at its actual UI sizes.
 
 ## App actions and browser media
 

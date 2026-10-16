@@ -9,6 +9,7 @@ on an integer grid and the PNG is lossless. Run this script from any folder.
 from pathlib import Path
 import struct
 import zlib
+from spidey_mask import MASK_PALETTE, mask_pixels
 
 
 WIDTH, HEIGHT = 544, 588
@@ -18,6 +19,7 @@ COLORS = {
     "coral": "ff958d", "red": "ed6e72", "peach": "ffd39a",
     "mint": "78ecb6", "green": "34cf8b", "paper": "fff0cc",
 }
+COLORS.update({name: color.lstrip("#") for name, color in MASK_PALETTE.items()})
 
 
 def rgba(name, alpha=255):
@@ -78,26 +80,9 @@ def access_panel():
     c.rect(524, 16, 4, 548, "blue")
     c.rect(16, 568, 508, 4, "blue")
 
-    # Header mask: cream eyes inside an angular coral silhouette.
-    mask = (
-        ".....IIIIII.....",
-        "...IIRRRRRRII...",
-        "..IRRRRRRRRRRI..",
-        ".IRRRRRRRRRRRRI.",
-        ".IRIRRRRRRRRIRI.",
-        "IRRPIIRRRRIIPRRI",
-        "IRRPPPII IIPP RRI".replace(" ", ""),
-        "IRRPPPPIRIPPP RRI".replace(" ", ""),
-        "IRRRPPIRRRIPPRRI",
-        ".IRRRIRRRRIRRRI.",
-        ".IRRRRRRRRRRRRI.",
-        "..IRRRRRRRRRRI..",
-        "..IRRRRRRRRRRI..",
-        "...IIRRRRRRII...",
-        ".....IIIIII.....",
-        "................",
-    )
-    c.sprite(24, 24, mask, {"I": "ink", "R": "coral", "P": "paper"})
+    # The same mask as the desktop SVG, at exact 2x pixels in the header.
+    for (x, y), color in mask_pixels().items():
+        c.rect(24 + x * 2, 12 + y * 2, 2, 2, color)
 
     # Header right-hand stepped marker and three little status pixels.
     for x, color in ((478, "mint"), (490, "peach"), (502, "coral")):

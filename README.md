@@ -16,7 +16,7 @@ These steps are for a first installation on Arch with an existing working Hyprla
 
 ### 1. Install packages and link the dotfiles
 
-Install the shell and the tools used by the current buttons, including `wpctl` from WirePlumber for the volume slider and mute control. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**. The current spider badges are bundled; they need no extra packages or generation step:
+Install the shell and the tools used by the current buttons, including `wpctl` from WirePlumber for the volume slider and mute control. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**. Spider badges, red Spidey masks and matching lock-screen artwork are bundled; they need no extra packages or generation step:
 
 ```sh
 sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
@@ -103,7 +103,7 @@ From your Arch Hyprland desktop, run:
 bash scripts/check-arch.sh --session
 ```
 
-Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Check the broad-bodied, short-legged spider badges in the top bar and tracker. Click the top-bar speaker/percentage to mute and unmute; open its adjacent `v` button and drag the volume slider to check audio adjustment. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
+Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Check the broad-bodied spider badges and red Spidey masks in the bars and tracker. Click the top-bar speaker/percentage to mute and unmute; open its adjacent `v` button and drag the volume slider to check audio adjustment. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
 
 The package command in step 1 includes the following tools. You can omit tools for controls you do not use:
 
@@ -171,7 +171,7 @@ bash scripts/install.sh
 bash scripts/check-arch.sh
 ```
 
-Run this from your existing checkout as your normal desktop user; only the package command uses `sudo`. The package list matches the first-install requirements. The badge refresh needs no additional packages. Keep your existing working PipeWire and network setup. From your Hyprland desktop, finish with `bash scripts/check-arch.sh --session` and check the spider badges in the top bar and tracker alongside the controls described below.
+Run this from your existing checkout as your normal desktop user; only the package command uses `sudo`. The package list matches the first-install requirements. The mask and lock-screen artwork refresh needs no additional packages or generation step. Keep your existing working PipeWire and network setup. From your Hyprland desktop, finish with `bash scripts/check-arch.sh --session`, check the red masks in the bars and tracker, and press `Super + L` to check the matching lock-screen mask.
 
 The installer recognizes both previous layouts. It reuses canonical links (including equivalent relative links), backs up aliases to the retired source, and removes only this checkout's retired `spidey-retro`, `hypr-spidey-retro` and `kitty-spidey` links. Unknown files, foreign links and earlier backups stay intact. If you moved to another checkout, use `--backup` for conflicting canonical links rather than deleting your old files.
 
@@ -227,7 +227,7 @@ This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mo
 - Colors/fonts: `quickshell/services/Theme.qml`.
 - Reserved edge sizes: `barHeight`, `railReserve` and `dockReserve` in the same theme file (76px top, 100px left and 98px bottom by default).
 - Frames/buttons: `quickshell/components/PixelFrame.qml` and `RetroButton.qml`.
-- Icons: `quickshell/assets/icons/`; rebuild with `python3 tools/generate-icons.py`.
+- Icons: `quickshell/assets/icons/`; rebuild with `python3 tools/generate-icons.py`. After changing the shared mask artwork, also run `python3 tools/generate-lock-assets.py` to update the lock-screen panel.
 - Preferred apps: `quickshell/config/apps.json`, or your personal `~/.config/spidey/apps.json` override.
 - Telemetry/actions: `quickshell/scripts/system.py`.
 - Hyprland and lock screen: `config/hypr/`.
@@ -237,6 +237,10 @@ This opens the [windowed preview](docs/preview.png) over a neutral grid. Demo mo
 Spider badges use the supplied reference's squat shape: a broad body and eight short, stepped legs. The peach, mint, coral and gray badge frames keep their existing colors:
 
 ![Updated spider sprites](docs/spider-icons.png)
+
+The Spidey head uses saturated red, white eyes and a navy outline. Desktop icons and the lock-screen header share [one pixel drawing and palette](tools/spidey_mask.py):
+
+![Red Spidey mask artwork](docs/mask-icons.png)
 
 This is an unofficial fan interpretation. The bundled font retains its [SIL Open Font License](quickshell/assets/fonts/OFL.txt).
 

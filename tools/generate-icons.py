@@ -7,6 +7,7 @@ Run from any directory; generated SVGs are written to quickshell/assets/icons.
 """
 from collections import defaultdict
 from pathlib import Path
+from spidey_mask import MASK_PALETTE, mask_pixels
 
 SIZE = 24
 PALETTE = {
@@ -15,6 +16,7 @@ PALETTE = {
     "green": "#34cf8b", "cyan": "#49c7f4", "ice": "#8ceaff",
     "blue": "#348cd5", "purple": "#7888dc", "gray": "#a9becb",
 }
+PALETTE.update(MASK_PALETTE)
 
 
 class Sprite:
@@ -122,17 +124,8 @@ def create_icons():
     s.rect(3,1,17,1,"paper").rect(2,2,1,16,"paper")
     spider_emblem(s); icons["spider"] = s
 
-    s = Sprite().octagon(1,1,22,22,6,"ink")
-    s.octagon(3,2,18,19,5,"coral")
-    s.poly([(3,14),(7,18),(17,18),(21,14),(21,18),(18,21),(6,21),(3,18)],"red")
-    # Sparse web lines keep the friendly cream eyes legible at bar size.
-    s.rect(11,2,2,7,"red").rect(11,17,2,4,"red")
-    s.rect(5,5,3,1,"red").rect(16,5,3,1,"red")
-    s.poly([(4,8),(10,10),(11,15),(8,17),(4,14)],"ink")
-    s.poly([(20,8),(14,10),(13,15),(16,17),(20,14)],"ink")
-    s.poly([(5,10),(9,11),(9,14),(7,15),(5,13)],"paper")
-    s.poly([(19,10),(15,11),(15,14),(17,15),(19,13)],"paper")
-    s.rect(8,3,3,1,"paper")
+    s = Sprite()
+    s.pixels.update(mask_pixels())
     icons["mask"] = s
 
     for name, color in (("spider-mint","mint"),("spider-coral","coral"),("spider-gray","gray")):
