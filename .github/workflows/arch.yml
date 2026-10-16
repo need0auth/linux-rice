@@ -21,7 +21,7 @@ jobs:
       - name: Install signed Arch packages
         run: >-
           pacman -Syu --noconfirm --needed
-          git python hyprland quickshell qt6-declarative qt6-svg ttf-dejavu sway grim
+          git python hyprland quickshell qt6-declarative qt6-svg ttf-dejavu sway grim libcap
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -29,6 +29,16 @@ jobs:
         run: |
           useradd --create-home spidey-ci
           install -d -m 755 -o spidey-ci -g spidey-ci /tmp/spidey-arch-artifacts
+          # Arch's Sway requests CAP_SYS_NICE. Docker cannot execute a file
+          # requesting capabilities outside its bounding set. The headless
+          # pixman test needs no scheduling privileges; drop only this test
+          # container's executable capabilities before running as a normal user.
+          sway_caps=$(getcap /usr/bin/sway)
+          printf '%s\n' "${sway_caps:-Sway has no executable capabilities}" \
+            > /tmp/spidey-arch-artifacts/sway-capabilities.txt
+          if [[ -n "$sway_caps" ]]; then
+            setcap -r /usr/bin/sway
+          fi
       - name: Test the native Arch stack
         run: |
           set -o pipefail
@@ -42,7 +52,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           root = Path('/tmp/spidey-arch-artifacts')
-          reports = [root / 'ci.log', *sorted((root / 'workarea').glob('*.json')),
+          reports = [root / 'sway-capabilities.txt', root / 'ci.log', *sorted((root / 'workarea').glob('*.json')),
                      *sorted((root / 'workarea').glob('*-shell.log')),
                      *sorted((root / 'workarea').glob('*-sway.log'))]
           for path in reports:
