@@ -33,6 +33,7 @@ def stop(process):
 
 def exercise(artifacts):
     report = {"passed": False, "checks": []}
+    terminal_log = artifacts / "rofi-terminal.log"
     xvfb = rofi = None
     read_fd = None
     try:
@@ -111,8 +112,9 @@ def exercise(artifacts):
             settings.mkdir()
             (settings / "apps.json").write_text(json.dumps({
                 "terminal": [[str(terminal), "--configured-arg", "Daily coding"]],
-                "launcher": [[*args, "-auto-select", "-filter", "Vim"]],
+                "launcher": [[*args, "-auto-select", "-filter", "Vim", "-log", str(terminal_log)]],
             }), encoding="utf-8")
+            (artifacts / "apps.json").write_text((settings / "apps.json").read_text(encoding="utf-8"), encoding="utf-8")
             result = subprocess.run(
                 [sys.executable, str(ROOT / "quickshell/scripts/system.py"), "action", "launcher"],
                 env=env, check=True, text=True, capture_output=True, timeout=10,
@@ -131,6 +133,8 @@ def exercise(artifacts):
             report["passed"] = True
     except Exception as exc:
         report["error"] = str(exc)
+        if terminal_log.exists():
+            report["terminal_log_tail"] = terminal_log.read_text(encoding="utf-8", errors="replace")[-12000:]
         raise
     finally:
         if read_fd is not None:
