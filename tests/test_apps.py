@@ -46,15 +46,19 @@ class AppTests(unittest.TestCase):
     def test_launcher_prefers_rofi_with_the_rice_theme(self):
         with patch.object(system.shutil, "which", side_effect=lambda name: f"/usr/bin/{name}" if name in {"rofi", "fuzzel"} else None), patch.object(system.subprocess, "Popen") as process:
             self.assertEqual(system.action("launcher")["program"], "rofi")
-            self.assertEqual(process.call_args.args[0], ["/usr/bin/rofi", "-show", "drun", "-theme", str(system.SHELL_ROOT / "assets" / "rofi.rasi"), "-terminal", "kitty"])
+            self.assertEqual(process.call_args.args[0], ["/usr/bin/rofi", "-show", "drun", "-theme", str(system.SHELL_ROOT / "assets" / "rofi.rasi"), "-theme-str", 'configuration { terminal: "kitty"; }'])
 
     def test_rofi_terminal_entries_use_available_configured_terminal_with_args(self):
-        terminal = ["my-terminal", "--profile", "Daily coding", "--title", "$(touch /tmp/nope)"]
+        terminal = ["my-terminal", "--profile", "Daily coding", "--title", 'José says "hi" \\ $(touch /tmp/nope)']
         self.override({"terminal": [["not-installed"], terminal]})
         with patch.object(system.shutil, "which", side_effect=lambda name: f"/usr/bin/{name}" if name in {"rofi", "my-terminal"} else None), patch.object(system.subprocess, "Popen") as process:
             system.action("launcher")
         argv = process.call_args.args[0]
-        self.assertEqual(shlex.split(argv[argv.index("-terminal") + 1]), terminal)
+        setting = argv[argv.index("-theme-str") + 1]
+        self.assertTrue(setting.startswith("configuration { terminal: "))
+        self.assertTrue(setting.endswith("; }"))
+        encoded = setting[len("configuration { terminal: "):-len("; }")]
+        self.assertEqual(shlex.split(json.loads(encoded)), terminal)
         self.assertNotIn("shell", process.call_args.kwargs)
 
     def test_explicit_rofi_terminal_setting_is_preserved(self):

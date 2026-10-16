@@ -336,9 +336,11 @@ def app_candidates(name: str) -> list[list[str]]:
         ):
             terminals = app_candidates("terminal")
             terminal = next((candidate for candidate in terminals if shutil.which(candidate[0])), terminals[0])
-            # Rofi parses its terminal setting as an argv string. Quote each
-            # configured argument so profiles and paths with spaces stay intact.
-            argv.extend(["-terminal", shlex.join(terminal)])
+            # Rofi 2 reparses command-line settings as RASI, stripping shell
+            # quotes from raw -terminal values. Apply a quoted RASI string in
+            # the later theme pass, preserving the argv string for execution.
+            setting = json.dumps(shlex.join(terminal), ensure_ascii=False)
+            argv.extend(["-theme-str", f"configuration {{ terminal: {setting}; }}"])
         candidates.append(argv)
     return candidates
 
