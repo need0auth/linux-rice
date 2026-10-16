@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import select
+import shlex
 import shutil
 import subprocess
 import sys
@@ -40,6 +41,9 @@ def exercise(artifacts):
         for program in ("Xvfb", "rofi"):
             if not shutil.which(program):
                 raise RuntimeError(f"Integration check requires {program}")
+        report["rofi_version"] = subprocess.run(
+            ["rofi", "-version"], check=True, capture_output=True, text=True, timeout=5,
+        ).stdout.strip()
         with tempfile.TemporaryDirectory(prefix="spidey-rofi-") as temporary:
             work = Path(temporary)
             env = dict(os.environ)
@@ -108,13 +112,30 @@ def exercise(artifacts):
                 encoding="utf-8",
             )
             terminal.chmod(0o755)
+            error_callback = work / "capture-rofi-error.py"
+            error_callback.write_text(
+                "import json, sys\nfrom pathlib import Path\n"
+                "Path(sys.argv[1]).write_text(json.dumps({'error': ' '.join(sys.argv[2:])}))\n",
+                encoding="utf-8",
+            )
+            callback = shlex.join([sys.executable, str(error_callback), str(artifacts / "rofi-error.json")]) + ' "{error}"'
             settings = work / "config" / "spidey"
             settings.mkdir()
             (settings / "apps.json").write_text(json.dumps({
                 "terminal": [[str(terminal), "--configured-arg", "Daily coding"]],
-                "launcher": [[*args, "-auto-select", "-filter", "Vim", "-log", str(terminal_log)]],
+                "launcher": [[*args, "-auto-select", "-filter", "Vim", "-log", str(terminal_log),
+                              "-on-menu-error", callback]],
             }), encoding="utf-8")
             (artifacts / "apps.json").write_text((settings / "apps.json").read_text(encoding="utf-8"), encoding="utf-8")
+            resolved = subprocess.run(
+                [sys.executable, "-c",
+                 "import json, runpy, sys\n"
+                 "module = runpy.run_path(sys.argv[1])\n"
+                 "print(json.dumps(module['app_candidates']('launcher')))\n",
+                 str(ROOT / "quickshell/scripts/system.py")],
+                env=env, check=True, capture_output=True, text=True, timeout=10,
+            )
+            report["resolved_launcher_argv"] = json.loads(resolved.stdout)[0]
             result = subprocess.run(
                 [sys.executable, str(ROOT / "quickshell/scripts/system.py"), "action", "launcher"],
                 env=env, check=True, text=True, capture_output=True, timeout=10,
@@ -134,7 +155,10 @@ def exercise(artifacts):
     except Exception as exc:
         report["error"] = str(exc)
         if terminal_log.exists():
-            report["terminal_log_tail"] = terminal_log.read_text(encoding="utf-8", errors="replace")[-12000:]
+            lines = terminal_log.read_text(encoding="utf-8", errors="replace").splitlines()
+            useful = [line for line in lines if not line.startswith(("[Theme]", "[Widgets.", "[Timings]"))
+                      or any(word in line.lower() for word in ("error", "fail", "warning"))]
+            report["terminal_log_tail"] = "\n".join(useful)[-6000:]
         raise
     finally:
         if read_fd is not None:
