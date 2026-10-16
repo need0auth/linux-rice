@@ -84,6 +84,16 @@ def exercise(artifacts):
             env["DISPLAY"] = f":{display}"
 
             args = ["rofi", "-show", "drun", "-theme", str(ROOT / "quickshell/assets/rofi.rasi")]
+            # Rofi 2.0's -rasi-validate calls display cleanup before initializing
+            # its backend and segfaults. Parse/dump through the initialized path.
+            validated = subprocess.run(
+                ["rofi", "-theme", str(ROOT / "quickshell/assets/rofi.rasi"), "-dump-theme"],
+                env=env, check=True, capture_output=True, text=True, timeout=10,
+            )
+            (artifacts / "parsed-theme.rasi").write_text(validated.stdout, encoding="utf-8")
+            assert "listview" in validated.stdout and "cyan" in validated.stdout, "Rofi did not parse the tracker theme"
+            assert "Failed to parse" not in validated.stderr, validated.stderr
+            report["checks"].append("Rofi parses the tracker theme through its initialized backend")
             with (artifacts / "rofi.log").open("w", encoding="utf-8") as log:
                 rofi = subprocess.Popen(args, env=env, stdout=log, stderr=subprocess.STDOUT)
             time.sleep(1)
