@@ -26,7 +26,9 @@ python3 tests/integration/wayland_workarea.py
 
 ## Native Arch Linux
 
-**Native Arch CI passed** for implementation commit `54d14d4`: [Arch Linux run #1](https://github.com/need0auth/linux-rice/actions/runs/38794450322). The job installed signed official Arch packages, ran all 35 tests, installed the dotfiles into a temporary config root, verified the Hyprland config as an ordinary user, rendered a 1600×1000 Quickshell preview, exercised dashboard/settings IPC and read live telemetry. Package versions, logs and the screenshot are recorded in the run's `arch-validation` artifact.
+**Native Arch CI passed** for the workarea fix at commit `af00a3a`: [Arch Linux run #5](https://github.com/need0auth/linux-rice/actions/runs/38863480122). The job installed signed official Arch packages, ran all 35 tests, installed the dotfiles into a temporary config root, verified the Hyprland config as an ordinary user, rendered a 1600×1000 Quickshell preview, exercised dashboard/settings IPC and read live telemetry. It also verified actual tiled-window geometry, popup stability and duplicate-launch behavior at both 1600×1000 and 1366×768. Package versions, logs, screenshots and geometry JSON are recorded in the run's `arch-validation` artifact.
+
+The isolated CI container removes Sway's executable capabilities before running the headless pixman test as an ordinary user. This avoids Docker rejecting execution when the package requests a scheduling capability outside the container's bounding set. It does not change the installed rice or require changes to your Arch desktop.
 
 An official Arch container started from digest `sha256:3c64b538588416593f69a1aebd2f2ec0f2541b29159f32556fa7def2167147a0`, image version `20261011.0.609700`. The target checker identifies Arch and reports missing desktop packages in that minimal image.
 
