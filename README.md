@@ -12,64 +12,100 @@ The top bar, left rail and bottom dock reserve compositor space, so tiled window
 
 ## Install on Arch Linux
 
-Use an up-to-date Arch installation and an existing working Hyprland session. Install the shell requirements with a full system upgrade:
+These steps are for a first installation on Arch with an existing working Hyprland session. Already installed an earlier rice? Use [Updating either previous version](#updating-either-previous-version).
+
+### 1. Install packages and link the dotfiles
+
+Install the shell and the tools used by the current buttons. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**:
 
 ```sh
-sudo pacman -Syu --needed hyprland quickshell qt6-svg python ttf-dejavu
-git clone https://github.com/need0auth/linux-rice.git
+sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
+  kitty rofi nemo wireplumber playerctl brightnessctl grim slurp wl-clipboard \
+  hyprlock networkmanager nm-connection-editor
+git clone --branch main https://github.com/need0auth/linux-rice.git
 cd linux-rice
 bash scripts/install.sh --dry-run
 bash scripts/install.sh
 bash scripts/check-arch.sh
 ```
 
-The stable `quickshell` package is in Arch's official repositories; no AUR helper is required. Its Qt dependencies are resolved by pacman. Keep Quickshell and Qt upgraded together. The bundled Silkscreen font is loaded directly by the shell.
+Run the dotfile installer as your normal desktop user, without `sudo`. The installer links configuration files; it does not install packages or enable services. Keep your existing working PipeWire and network setup. NETWORK opens NetworkManager settings by default; [app preferences](#preferred-applications) can select another settings tool.
 
-Installation creates only these links, so keep this checkout in place:
+Keep your existing Brave installation, or install your preferred browser separately and select it in [app preferences](#preferred-applications). Brave is not installed by the command above. Discord, Obsidian and Spotify are also your own applications; installed desktop entries appear in APPS. Vim desktop entries use the configured terminal.
+
+Stable `quickshell` is in Arch's official repositories; no AUR helper is required for the shell. Pacman resolves its Qt dependencies. Keep Quickshell and Qt upgraded together with `pacman -Syu`. The bundled Silkscreen font is loaded directly by the shell.
+
+Installation creates these links, so keep this checkout in place:
 
 | Installed path | Repository directory |
 | --- | --- |
 | `~/.config/quickshell/spidey` | `quickshell/` |
 | `~/.config/hypr-spidey` | `config/hypr/` |
 
-The installer migrates recognizable old Spidey startup/source references in your Hyprland files and backs up every changed file. Other settings and personal app preferences are preserved. It does not run a package manager or enable services. Unrelated conflicting files stop the preflight; use `--backup` to preserve and replace those conflicts. `--config-root /absolute/path` selects a custom root; export `XDG_CONFIG_HOME` to that root when starting the shell.
+On a first install, add the Hyprland load line in step 2 yourself. On upgrades, the installer migrates recognized older Spidey references with backups and restarts an existing Spidey bar. Unrelated conflicting files stop the preflight; `--backup` preserves and replaces those conflicts. Personal app preferences are preserved.
 
-### Connect it to Hyprland
+For an offline install, complete the remaining steps after entering Hyprland. `--no-restart` updates files without reloading Hyprland or restarting bars. `--config-root /absolute/path` selects a custom root; export `XDG_CONFIG_HOME` to that same root before installation and shell startup.
 
-Run `bash scripts/check-arch.sh` or `hyprctl version` to identify your installed Hyprland. Current **0.55+** uses Lua; add this to your existing Lua config:
+### 2. Connect it to Hyprland
+
+Use the version reported by `bash scripts/check-arch.sh` or `hyprctl version`. Current **Hyprland 0.55+ uses Lua**. Add this once to the Lua configuration loaded by your session, usually `~/.config/hypr/hyprland.lua`:
 
 ```lua
 local config_root = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
 dofile(config_root .. "/hypr-spidey/rice.lua")({ config_root = config_root })
 ```
 
-For **0.48–0.54**, add this to your existing `hyprland.conf`:
+For an existing **Hyprland 0.48–0.54** installation, add this once to `~/.config/hypr/hyprland.conf` instead:
 
 ```ini
 $spideyConfigRoot = ~/.config
 source = $spideyConfigRoot/hypr-spidey/rice.conf
 ```
 
-Keep your existing monitor definitions, keyboard layout and device settings. The snippet adds styling, bindings and new-session autostart. Reload, then launch the shell manually in an existing session:
+With `--config-root`, replace `~/.config` in the legacy snippet with the same absolute config root used by the installer.
+
+Keep your monitor definitions, keyboard layout and device settings. The snippet applies the rice's styling and bindings and registers Spidey for the next Hyprland session. Disable your previous bar's startup entry, such as Waybar, when switching to Spidey.
+
+The snippet already autostarts Spidey with `--no-duplicate`; keep one Spidey startup entry. If you manage it through your own `autostart.lua`, use this load call in place of the default Lua call above:
+
+```lua
+local config_root = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+dofile(config_root .. "/hypr-spidey/rice.lua")({
+    config_root = config_root,
+    autostart = false,
+})
+```
+
+Then add the launch to your existing startup handler, or use this handler if you do not have one:
+
+```lua
+hl.on("hyprland.start", function()
+    hl.exec_cmd("qs -c spidey --no-duplicate")
+end)
+```
+
+### 3. Start it in the current session
+
+A fresh installation does not start the bar automatically. Reloading Hyprland also does not run its next-session startup handler. Close your previous bar's running instance, then launch Spidey once:
 
 ```sh
 hyprctl reload
 qs -c spidey --no-duplicate --daemonize
 ```
 
-Use `quickshell` in place of `qs` if that is your executable name. Complete starter configs are available: `Hyprland --config ~/.config/hypr-spidey/hyprland.lua` for 0.55+, or the `.conf` equivalent for older supported versions. The starter uses a US keyboard; change `kb_layout` to `br` if appropriate.
+Use `quickshell` in place of `qs` if that is your executable name. For a new Hyprland session, the complete starter can be launched from a TTY with `Hyprland --config ~/.config/hypr-spidey/hyprland.lua` for 0.55+, or the `.conf` equivalent for older supported versions. The starter uses a US keyboard; change `kb_layout` to `br` if appropriate.
 
-`rice.lua` already autostarts the shell, using `--no-duplicate`. If you prefer launching it from your own `autostart.lua`, pass `autostart = false` in the existing `rice.lua` options and use `hl.exec_cmd("qs -c spidey --no-duplicate")` in your startup handler. Keep one startup entry.
+### 4. Check the installation
 
-### Optional desktop controls
-
-Install the tools for the controls you want:
+From your Arch Hyprland desktop, run:
 
 ```sh
-sudo pacman -Syu --needed kitty rofi nemo \
-  wireplumber playerctl brightnessctl grim slurp wl-clipboard hyprlock \
-  networkmanager nm-connection-editor
+bash scripts/check-arch.sh --session
 ```
+
+Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
+
+The package command in step 1 includes the following tools. You can omit tools for controls you do not use:
 
 | Tool | Control |
 | --- | --- |
@@ -82,9 +118,9 @@ sudo pacman -Syu --needed kitty rofi nemo \
 | `grim`, `slurp`, `wl-copy` | Region screenshots and clipboard capture. |
 | `hyprlock` | Locking with the bundled cyan/navy config and Arch's PAM setup. |
 
-The rice does not change your network or audio service setup. Missing tools or devices disable the corresponding readings/controls or produce an action message. CPU, RAM, storage and uptime need only Python and Linux's system interfaces.
+Missing tools or devices disable the corresponding readings/controls or produce an action message. CPU, RAM, storage and uptime need only Python and Linux's system interfaces. Audio routing, backlight permissions and locking depend on your existing desktop services and hardware.
 
-Run `bash scripts/check-arch.sh --all-tools --session` from your Arch Hyprland desktop to check installed controls and compositor monitor IPC. Audio routing, backlight access, MPRIS and locking still need a direct check on your machine.
+Use `bash scripts/check-arch.sh --all-tools --session` only when you want every optional tool to be required, including brightness and locking tools that may not apply to your setup.
 
 ## Preferred applications
 
