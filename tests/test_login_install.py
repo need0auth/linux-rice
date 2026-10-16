@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -209,6 +210,8 @@ class LoginServiceTests(unittest.TestCase):
 
 class GreeterProcessTests(unittest.TestCase):
     def test_renderer_exit_always_ends_owned_sway_compositor(self):
+        bash_binary = shutil.which("bash")
+        self.assertIsNotNone(bash_binary)
         with tempfile.TemporaryDirectory(prefix="spidey greeter wrapper ") as directory:
             base = Path(directory)
             for binary, returncode in (("qs", 0), ("quickshell", 7)):
@@ -224,9 +227,11 @@ class GreeterProcessTests(unittest.TestCase):
                             " stream.write(json.dumps([os.path.basename(sys.argv[0]),*sys.argv[1:]])+'\\n')\n"
                             f"sys.exit({returncode if command == binary else 0})\n")
                         path.chmod(0o755)
-                    environment = dict(os.environ, PATH=str(command_dir) + os.pathsep + os.defpath,
+                    # A real installed qs must not shadow the fake quickshell
+                    # fallback on Arch. The fake commands use absolute shebangs.
+                    environment = dict(os.environ, PATH=str(command_dir),
                                        MOCK_LOG=str(log))
-                    result = subprocess.run(["bash", str(REPO / "config/greetd/start-greeter")],
+                    result = subprocess.run([bash_binary, str(REPO / "config/greetd/start-greeter")],
                                             env=environment, capture_output=True, text=True, check=False)
                     self.assertEqual(result.returncode, returncode, result.stderr)
                     self.assertEqual([json.loads(line) for line in log.read_text().splitlines()], [
