@@ -1,5 +1,5 @@
 -- Sourceable theme and bindings for the Hyprland 0.55+ Lua API.
--- The returned function accepts { config_root = "/path", autostart = true }.
+-- The returned function accepts { config_root = "/path", autostart = true, bindings = true }.
 return function(options)
     options = options or {}
     local root = options.config_root or os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
@@ -47,6 +47,9 @@ return function(options)
             hl.exec_cmd(shell_command())
         end)
     end
+
+    -- CachyOS can retain its own bindings without registering duplicate actions.
+    if options.bindings == false then return end
 
     hl.bind("SUPER + RETURN", hl.dsp.exec_cmd(desktop_action("terminal")))
     hl.bind("SUPER + D", hl.dsp.exec_cmd(shell_command("ipc call dashboard toggle")))

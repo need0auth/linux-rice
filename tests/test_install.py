@@ -67,6 +67,25 @@ class InstallerTests(unittest.TestCase):
         self.run_script("uninstall.sh")
         self.assert_absent(LINKS)
 
+    def test_cachyos_configs_and_services_survive_install_and_upgrade(self):
+        files = {
+            "hypr/hyprland.lua": 'dofile("config/autostart.lua")\n',
+            "hypr/config/autostart.lua": 'hl.exec_cmd("noctalia")\n',
+            "hypr/config/defaults.conf": "$filemanager = dolphin\n$applauncher = wofi\n",
+            "kitty/kitty.conf": "font_size 13\n",
+            "spidey/apps.json": '{"files": [["nemo", "{home}"]]}\n',
+            "systemd/user/graphical-session.target.wants/cachyos.service": "existing service fixture\n",
+        }
+        for relative, content in files.items():
+            path = self.config_root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
+        for arguments in (("--dry-run",), ("--no-restart",), ("--no-restart",)):
+            self.run_script("install.sh", *arguments)
+            for relative, content in files.items():
+                self.assertEqual((self.config_root / relative).read_text(), content)
+        self.assert_links()
+
     def test_conflicts_at_either_destination_prevent_partial_installation(self):
         for relative, _ in LINKS:
             with self.subTest(relative=relative):

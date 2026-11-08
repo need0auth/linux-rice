@@ -1,10 +1,10 @@
 # Lock screen, boot login and wallpaper
 
-The lock screen and graphical login share the desktop's cyan pixel frames, navy panels, peach keys and pixel badges. The graphical login uses the same broad-bodied spider emblem as the desktop. Hyprlock protects an existing session. For boot login, Quickshell renders a greetd prompt inside a restricted Sway session; greetd handles authentication through PAM and starts Hyprland after successful authentication. Installing the desktop rice does not change your login manager.
+The lock screen and graphical login share the desktop's cyan pixel frames, navy panels, peach keys and pixel badges. The graphical login uses the same broad-bodied spider emblem as the desktop. Hyprlock protects an existing session. For boot login, Quickshell renders a greetd prompt inside a restricted Sway session; greetd handles authentication through PAM and starts Hyprland after successful authentication. Installing the desktop rice does not change your login manager. On CachyOS, retain the bundled display manager, idle/lock services and wallpaper manager; the optional greetd replacement below is not part of the recommended installation.
 
 ## Lock screen
 
-Install the packages and dotfiles using the [first-install instructions](../README.md#install-on-arch-linux), then press `Super + L` or click the dock's lock button. You can also launch the same action from a terminal:
+Install the packages and dotfiles using the [first-install instructions](../README.md#install-on-cachyos-or-arch-linux), then click the dock’s lock button (`Super + L` also works with rice bindings enabled). You can also launch the same action from a terminal:
 
 ```sh
 python3 "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/spidey/scripts/system.py" action lock

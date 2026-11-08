@@ -1,4 +1,4 @@
-# Spidey Tracker // Arch Linux rice
+# Spidey Tracker // CachyOS and Arch Linux rice
 
 [![Arch Linux checks](https://github.com/need0auth/linux-rice/actions/workflows/arch.yml/badge.svg)](https://github.com/need0auth/linux-rice/actions/workflows/arch.yml)
 
@@ -10,18 +10,18 @@ The shell provides numbered workspace buttons, an app rail, media dock, quick se
 
 The top bar, left rail and bottom dock reserve compositor space, so tiled windows stay clear of them. The tracker and quick settings are popups. Transparent areas around the bars pass clicks through.
 
-## Install on Arch Linux
+## Install on CachyOS or Arch Linux
 
-These steps are for a first installation on Arch with an existing working Hyprland session. Already installed an earlier rice? Use [Updating either previous version](#updating-either-previous-version).
+These steps are for a first installation on CachyOS or Arch with an existing working Hyprland session. Already installed an earlier rice? Use [Updating either previous version](#updating-either-previous-version).
 
 ### 1. Install packages and link the dotfiles
 
-Install the shell and the tools used by the current buttons, including `wpctl` from WirePlumber for the volume slider and mute control. The defaults are **Kitty, Brave, Nemo and the themed Rofi launcher**. Spider badges, red Spidey masks and matching lock-screen artwork are bundled; they need no extra packages or generation step:
+Install the shell and the tools used by the current buttons, including `wpctl` from WirePlumber for the volume slider and mute control. The defaults keep **Kitty and Brave**, prefer **Dolphin and Noctalia** from current CachyOS, and use **Wofi** on older CachyOS Hyprland installations. Nemo and themed Rofi are fallbacks. Spider badges, red Spidey masks and matching lock-screen artwork are bundled; they need no extra packages or generation step:
 
 ```sh
 sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
-  kitty rofi nemo wireplumber playerctl brightnessctl grim slurp wl-clipboard \
-  hyprlock networkmanager nm-connection-editor
+  kitty vim wireplumber playerctl brightnessctl grim slurp wl-clipboard \
+  hyprlock nm-connection-editor
 git clone --branch main https://github.com/need0auth/linux-rice.git
 cd linux-rice
 bash scripts/install.sh --dry-run
@@ -31,7 +31,7 @@ bash scripts/check-arch.sh
 
 Run the dotfile installer as your normal desktop user, without `sudo`. The installer links configuration files; it does not install packages or enable services. Keep your existing working PipeWire and network setup. NETWORK opens NetworkManager settings by default; [app preferences](#preferred-applications) can select another settings tool.
 
-Keep your existing Brave installation, or install your preferred browser separately and select it in [app preferences](#preferred-applications). Brave is not installed by the command above. Discord, Obsidian and Spotify are also your own applications; installed desktop entries appear in APPS. Vim desktop entries use the configured terminal.
+Keep Brave, Kitty, Discord, Obsidian, Vim and Spotify and their existing profiles/configurations. Brave, Discord, Obsidian and Spotify are not installed by the command above; on a clean machine install them separately using your trusted CachyOS repositories or reviewed AUR packages (for example `brave-bin`, `discord`, `obsidian`, `spotify`, depending on repository availability). Do not run an AUR helper as root. These apps are not required to start the rice; installed desktop entries appear in APPS. Vim desktop entries use the configured terminal.
 
 Stable `quickshell` is in Arch's official repositories; no AUR helper is required for the shell. Pacman resolves its Qt dependencies. Keep Quickshell and Qt upgraded together with `pacman -Syu`. The bundled Silkscreen font is loaded directly by the shell.
 
@@ -45,6 +45,14 @@ Installation creates these links, so keep this checkout in place:
 On a first install, add the Hyprland load line in step 2 yourself. On upgrades, the installer migrates recognized older Spidey references with backups and restarts an existing Spidey bar. Unrelated conflicting files stop the preflight; `--backup` preserves and replaces those conflicts. Personal app preferences are preserved.
 
 For an offline install, complete the remaining steps after entering Hyprland. `--no-restart` updates files without reloading Hyprland or restarting bars. `--config-root /absolute/path` selects a custom root; export `XDG_CONFIG_HOME` to that same root before installation and shell startup.
+
+If your installation lacks a file manager or standalone launcher, install only the fallback you need:
+
+```sh
+sudo pacman -Syu --needed nemo rofi
+```
+
+Do not install Nemo/Rofi just to replace working bundled apps. The checker accepts alternative file managers and launchers, including with `--all-tools`.
 
 ### 2. Connect it to Hyprland
 
@@ -64,7 +72,21 @@ source = $spideyConfigRoot/hypr-spidey/rice.conf
 
 With `--config-root`, replace `~/.config` in the legacy snippet with the same absolute config root used by the installer.
 
-Keep your monitor definitions, keyboard layout and device settings. The snippet applies the rice's styling and bindings and registers Spidey for the next Hyprland session. Disable your previous bar's startup entry, such as Waybar, when switching to Spidey.
+On CachyOS, back up the configuration file you edit and append the load call **after** the existing includes. Keep the CachyOS config tree, UWSM session, environment, portals, polkit agent, notification daemon, idle/lock handler, wallpaper, PipeWire/WirePlumber, networking and display manager intact. Do not copy the standalone starter over the bundled config or run the optional login installer for this setup.
+
+For Lua CachyOS configs, keep the existing keybindings with this call instead of the default above:
+
+```lua
+local config_root = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+dofile(config_root .. "/hypr-spidey/rice.lua")({
+    config_root = config_root,
+    bindings = false,
+})
+```
+
+This retains CachyOS shortcuts (the Controls table below describes the optional rice bindings). Set the existing CachyOS terminal/browser preferences to Kitty/Brave. For legacy `.conf`, the snippet includes bindings: back up and remove only overlapping binding lines from your user config before sourcing it, including media/volume/brightness keys, so one key does not execute twice. Keep all other CachyOS settings and startup entries.
+
+Keep your monitor definitions, keyboard layout and device settings. The snippet applies the rice's styling and bindings and registers Spidey for the next Hyprland session. Disable only your previous bar’s startup entry, such as Waybar, when switching to Spidey. If using Noctalia, keep its process running for its launcher and other services; hide its bar/dock through its settings instead. Do not stop all Quickshell processes.
 
 The snippet already autostarts Spidey with `--no-duplicate`; keep one Spidey startup entry. If you manage it through your own `autostart.lua`, use this load call in place of the default Lua call above:
 
@@ -73,6 +95,7 @@ local config_root = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.con
 dofile(config_root .. "/hypr-spidey/rice.lua")({
     config_root = config_root,
     autostart = false,
+    bindings = false, -- keep CachyOS shortcuts; omit to use the rice bindings
 })
 ```
 
@@ -86,7 +109,7 @@ end)
 
 ### 3. Start it in the current session
 
-A fresh installation does not start the bar automatically. Reloading Hyprland also does not run its next-session startup handler. Close your previous bar's running instance, then launch Spidey once:
+A fresh installation does not start the bar automatically. Reloading Hyprland also does not run its next-session startup handler. Close only your previous standalone bar’s running instance (or hide Noctalia’s bar in its settings), then launch Spidey once:
 
 ```sh
 hyprctl reload
@@ -97,20 +120,20 @@ Use `quickshell` in place of `qs` if that is your executable name. For a new Hyp
 
 ### 4. Check the installation
 
-From your Arch Hyprland desktop, run:
+From your CachyOS or Arch Hyprland desktop, run:
 
 ```sh
 bash scripts/check-arch.sh --session
 ```
 
-Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Nemo, WEB should open Brave when installed, and APPS should show the pastel Rofi menu. Check the broad-bodied spider badges and red Spidey masks in the bars and tracker. Click the top-bar speaker/percentage to mute and unmute; open its adjacent `v` button and drag the volume slider to check audio adjustment. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
+Click a numbered workspace, TERM, WEB, FILES, APPS and NETWORK. Files should open Dolphin (Nemo if Dolphin is absent), WEB should open Brave when installed, and APPS should open Noctalia, Wofi or the fallback themed Rofi menu. Check the broad-bodied spider badges and red Spidey masks in the bars and tracker. Click the top-bar speaker/percentage to mute and unmute; open its adjacent `v` button and drag the volume slider to check audio adjustment. Play a YouTube video or Spotify track to check the dock; see [media troubleshooting](#brave-youtube-and-spotify-media) if its title is absent. Tiled windows should stay clear of the top, left and bottom bars.
 
-The package command in step 1 includes the following tools. You can omit tools for controls you do not use:
+The package command and existing CachyOS desktop provide the following tools. You can omit tools for controls you do not use:
 
 | Tool | Control |
 | --- | --- |
-| `kitty`, your existing Brave installation, `nemo` | Default terminal, browser and files. Kitty keeps your normal configuration. |
-| `rofi` | APPS launcher with the cyan/navy/pastel theme; Fuzzel and Wofi are fallbacks. |
+| `kitty`, your existing Brave installation, `dolphin` (fallback `nemo`) | Default terminal, browser and files. Kitty keeps your normal configuration. |
+| `noctalia` / `wofi` (fallback `rofi`) | CachyOS APPS launcher; Rofi uses the bundled cyan/navy/pastel theme. |
 | `wpctl` from `wireplumber` | The 0–100% volume slider and mute, with an existing working PipeWire session. |
 | `playerctl` | Playback and metadata from MPRIS players. |
 | `brightnessctl` | Backlight controls, subject to hardware and user permissions. |
@@ -122,11 +145,13 @@ Missing tools or devices disable the corresponding readings/controls or produce 
 
 Use `bash scripts/check-arch.sh --all-tools --session` only when you want every optional tool to be required, including brightness and locking tools that may not apply to your setup.
 
-Press `Super + L` or use the dock's lock button to try the new lock screen. See [lock screen, boot login and wallpaper](docs/appearance.md) for the bundled wallpaper, the optional graphical greetd login screen, or colors for your existing Ly login. The normal dotfile installer keeps your current login manager.
+Use the dock’s lock button to try the bundled lock screen; `Super + L` does the same with the rice bindings enabled. See [lock screen, boot login and wallpaper](docs/appearance.md) for the bundled wallpaper, the optional graphical greetd login screen, or colors for your existing Ly login. The normal dotfile installer keeps your current login manager.
+
+The bundled-app choices follow CachyOS’s [current Hyprland package list](https://github.com/CachyOS/cachyos-calamares/blob/master/src/modules/netinstall/netinstall.yaml), [Noctalia bindings](https://github.com/CachyOS/cachyos-hypr-noctalia/blob/master/etc/skel/.config/hypr/config/binds.lua), and [older Wofi defaults](https://github.com/CachyOS/cachyos-hyprland-settings/blob/master/etc/skel/.config/hypr/config/defaults.conf). Installed versions vary; personal overrides take precedence.
 
 ## Preferred applications
 
-Edit [quickshell/config/apps.json](quickshell/config/apps.json) to change what the buttons launch. Defaults prefer **Kitty, Brave and Nemo**. Each action contains an ordered list of argument arrays; the first installed executable wins. Files launches a real file manager directly, so your folder MIME association cannot send it to an editor. The top-bar NETWORK button opens your configured network settings app.
+Edit [quickshell/config/apps.json](quickshell/config/apps.json) to change what the buttons launch. Defaults prefer **Kitty, Brave and Dolphin**, with Nemo as the next file-manager fallback. Each action contains an ordered list of argument arrays; the first installed executable wins. Files launches a real file manager directly, so your folder MIME association cannot send it to an editor. The top-bar NETWORK button opens your configured network settings app.
 
 For preferences that survive `git pull`, create `~/.config/spidey/apps.json` (or `$XDG_CONFIG_HOME/spidey/apps.json`). Include only the actions you want to replace:
 
@@ -140,7 +165,7 @@ For preferences that survive `git pull`, create `~/.config/spidey/apps.json` (or
 
 Available keys are `terminal`, `browser`, `files`, `network`, `launcher` and `lock`. Arguments support `{home}`, `{config}` and `{shell}` path tokens. Keep each argument separate; these commands do not run through a shell. Changes apply on the next click. The provided Hyprland terminal/files/launcher shortcuts use the same preferences after `hyprctl reload`.
 
-APPS opens the bundled [Rofi theme](quickshell/assets/rofi.rasi). Installed desktop entries such as Discord, Obsidian, Spotify and Brave appear in its searchable list. Rofi uses your configured terminal for terminal entries such as Vim. You can replace `launcher` with your own Rofi command or another launcher.
+APPS prefers `noctalia msg panel-toggle launcher`, then `wofi --show drun`, then Rofi with the bundled [theme](quickshell/assets/rofi.rasi), then Fuzzel. Executable availability determines selection; Noctalia must also be running. If you disable it entirely, override `launcher` with Wofi or Rofi. Installed desktop entries such as Discord, Obsidian, Spotify and Brave appear in its searchable list. The Rofi fallback uses your configured terminal for terminal entries such as Vim. Keep the bundled launcher’s terminal setting on Kitty as well. You can replace `launcher` with your own Rofi command or another launcher.
 
 ## Brave, YouTube and Spotify media
 
@@ -164,20 +189,20 @@ Update from this checkout and run the installer to load the current icons and co
 git switch main
 git pull --ff-only
 sudo pacman -Syu --needed git hyprland quickshell qt6-svg python ttf-dejavu \
-  kitty rofi nemo wireplumber playerctl brightnessctl grim slurp wl-clipboard \
-  hyprlock networkmanager nm-connection-editor
+  kitty vim wireplumber playerctl brightnessctl grim slurp wl-clipboard \
+  hyprlock nm-connection-editor
 bash scripts/install.sh --dry-run
 bash scripts/install.sh
 bash scripts/check-arch.sh
 ```
 
-Run this from your existing checkout as your normal desktop user; only the package command uses `sudo`. The package list matches the first-install requirements. The mask and lock-screen artwork refresh needs no additional packages or generation step. Keep your existing working PipeWire and network setup. From your Hyprland desktop, finish with `bash scripts/check-arch.sh --session`, check the red masks in the bars and tracker, and press `Super + L` to check the matching lock-screen mask.
+Run this from your existing checkout as your normal desktop user; only the package command uses `sudo`. The package list matches the first-install requirements; keep CachyOS’s bundled Dolphin/Noctalia or Wofi. Install Nemo/Rofi only if a fallback is needed. The mask and lock-screen artwork refresh needs no additional packages or generation step. Keep your existing working PipeWire and network setup. From your Hyprland desktop, finish with `bash scripts/check-arch.sh --session`, check the red masks in the bars and tracker, and test the lock action to check the matching lock-screen mask (CachyOS shortcuts may retain their existing lock screen).
 
 The installer recognizes both previous layouts. It reuses canonical links (including equivalent relative links), backs up aliases to the retired source, and removes only this checkout's retired `spidey-retro`, `hypr-spidey-retro` and `kitty-spidey` links. Unknown files, foreign links and earlier backups stay intact. If you moved to another checkout, use `--backup` for conflicting canonical links rather than deleting your old files.
 
 Recognized `dofile`/`source` lines and plain Quickshell startup/IPC commands are migrated to the current names. Startup commands gain `--no-duplicate`. The former rice's wallpaper startup and Kitty theme include are commented out, leaving other wallpaper and terminal settings alone. Each changed file gets an adjacent `.spidey-backup.<timestamp>.<pid>` copy. External symlinks and complex expressions are left unchanged with a review notice.
 
-On an active Wayland desktop, it stops only verified Spidey instances belonging to this checkout on the current display, reloads Hyprland when available, and starts one current bar if one was already running. Other Quickshell configs and sessions remain running. `--no-restart` updates files without touching live processes or reloading Hyprland. Offline installs update files for your next login. Personal `~/.config/spidey/apps.json` overrides are never replaced.
+On an active Wayland desktop, it stops only verified Spidey instances belonging to this checkout on the current display, reloads Hyprland when available, and starts one current bar if one was already running. Other Quickshell configs and sessions remain running. `--no-restart` updates files without touching live processes or reloading Hyprland. Offline installs update files for your next login. Personal `~/.config/spidey/apps.json` overrides are never replaced. Existing explicit Nemo/Rofi preferences therefore stay in effect; remove only those action keys if you want the new bundled-app defaults. Existing CachyOS configs and services remain in place. On Lua, use `bindings = false` as above to retain CachyOS shortcuts.
 
 If you previously installed the optional graphical greetd login, also refresh its separate root-owned snapshot using the [login update instructions](docs/appearance.md#updates-and-rollback). Skip that step when keeping Ly or another login manager.
 

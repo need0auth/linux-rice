@@ -1,5 +1,11 @@
 # Validation
 
+## CachyOS adaptation checks
+
+The adaptation passed 121 Python tests, Bash syntax checks and `git diff --check`. Fixtures cover CachyOS/Arch distro detection, bundled-app and fallback availability, application priority, and preservation of CachyOS config, service files and personal overrides across first installation and repeated upgrades. Lua 5.4 execution with a stub Hyprland API verified default bindings and `bindings = false`, with and without autostart.
+
+A live CachyOS/Hyprland session was unavailable for this change. Run the README’s `--session` checks and test the installed launcher, lock and hardware controls on the target desktop. The earlier rendering results below are historical, not new CachyOS validation.
+
 ## Checks completed in the cloud
 
 - **116 Python and installer tests passed.** Includes migration from both earlier layouts, personal-file/link preservation, dry runs, repeated installation, backups, parsing, missing tools, timeouts, action validation, app preferences, MPRIS session selection, provider-specific workspace dispatch, user-reference upgrades, session-scoped restarts, child-scoped lock assets, staged greeter updates and login service rollback.
@@ -29,7 +35,7 @@ The volume integration test drives the production top-bar popup with real Qt poi
 python3 tests/integration/volume.py
 ```
 
-App configuration tests verify Brave preference, direct file-manager launches that avoid folder MIME handlers, personal JSON overrides, literal argument handling, Rofi terminal selection and useful errors for missing network tools. Defaults are Kitty, Brave and Nemo. The provided Hyprland app shortcuts share the same configuration.
+App configuration tests verify Brave preference, direct file-manager launches that avoid folder MIME handlers, personal JSON overrides, literal argument handling, Rofi terminal selection and useful errors for missing network tools. Defaults are Kitty, Brave and Dolphin; launchers prefer Noctalia, then Wofi, with Nemo/Rofi fallbacks. App tests cover bundled-app priority, fallbacks and preservation of explicit overrides. The provided Hyprland app shortcuts share the same configuration.
 
 An actual Rofi 1.7.5 window rendered the bundled theme under an isolated Xvfb server in the cloud. The public `system.py action launcher` path opened a temporary `Terminal=true` desktop entry in the configured terminal, including an executable path with a space and custom arguments. The portable `tests/integration/rofi.py` retains this check and runs in native Arch CI; it requires `rofi` and `xorg-server-xvfb` when run on Arch. The test isolates display sockets, desktop entries and all config directories. It also checks theme parsing through `-dump-theme`: Rofi 2.0's standalone `-rasi-validate` calls display cleanup before backend initialization and crashes even after the real launcher checks pass.
 

@@ -6,7 +6,7 @@ usage() {
     cat <<'USAGE'
 Usage: scripts/check-arch.sh [--all-tools] [--session]
 
-Check Arch Linux, required packages and executable versions. Optional desktop
+Check CachyOS/Arch Linux, required packages and executable versions. Optional desktop
 controls are reported separately unless --all-tools makes them required.
 --session additionally checks an active Wayland Hyprland session and monitors.
 No packages, configuration files, services or desktop settings are changed.
@@ -62,10 +62,10 @@ if [[ -r /etc/os-release ]]; then
     os_id=${os_id#\"}
     os_id=${os_id%\"}
 fi
-if [[ "$os_id" == arch ]]; then
-    pass 'Arch Linux target'
+if [[ "$os_id" == arch || "$os_id" == cachyos ]]; then
+    pass "Supported Arch/CachyOS target: $os_id"
 else
-    fail "Arch Linux target required; this machine reports ID=$os_id"
+    fail "Arch Linux or CachyOS target required; this machine reports ID=$os_id"
 fi
 
 for executable in bash realpath readlink ln mv mkdir rm date timeout; do
@@ -129,8 +129,20 @@ else
 fi
 
 optional kitty 'terminal and Super+Enter'
-optional rofi 'themed APPS launcher and Super+Space (Fuzzel/Wofi can be configured instead)'
-optional nemo 'default Files button and Super+E (other file managers can be configured)'
+optional_group() {
+    local description=$1
+    shift
+    local executable
+    for executable in "$@"; do
+        if command -v "$executable" >/dev/null 2>&1; then
+            pass "$executable — $description"
+            return
+        fi
+    done
+    optional "$1" "$description (alternatives: $*)"
+}
+optional_group 'APPS launcher' noctalia wofi rofi fuzzel
+optional_group 'Files button' dolphin nemo thunar nautilus pcmanfm-qt pcmanfm caja cosmic-files
 browser_found=false
 for browser in brave brave-browser brave-bin chromium google-chrome-stable firefox; do
     if command -v "$browser" >/dev/null 2>&1; then
@@ -173,7 +185,7 @@ printf '\n%d required check(s) failed; %d optional tool(s) unavailable.\n' "$fai
 if ((failures)); then
     exit 1
 fi
-printf 'Required Arch installation checks passed.\n'
+printf 'Required CachyOS/Arch installation checks passed.\n'
 if ! "$session"; then
     printf 'Run --session inside Hyprland to check compositor IPC.\n'
 fi
